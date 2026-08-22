@@ -1,0 +1,229 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-yes: var(--yes);
+  --color-yes-foreground: var(--yes-foreground);
+  --color-no: var(--no);
+  --color-no-foreground: var(--no-foreground);
+  --color-elevated: var(--elevated);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.virtual.dark,
+:root.virtual {
+  --background: oklch(0.177 0.013 264);
+  --foreground: oklch(0.985 0.002 264);
+  --elevated: oklch(0.238 0.015 262);
+  --card: oklch(0.213 0.013 264);
+  --card-foreground: oklch(0.985 0.002 264);
+  --popover: oklch(0.243 0.016 264);
+  --popover-foreground: oklch(0.985 0.002 264);
+  --primary: oklch(0.7 0.16 165);
+  --primary-foreground: oklch(0.99 0.005 165);
+  --secondary: oklch(0.238 0.015 262);
+  --secondary-foreground: oklch(0.985 0.002 264);
+  --muted: oklch(0.20 0.013 264);
+  --muted-foreground: oklch(0.644 0.015 273);
+  --accent: oklch(0.25 0.014 264);
+  --accent-foreground: oklch(0.985 0.002 264);
+  --destructive: oklch(0.617 0.186 24);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.27 0.014 266);
+  --input: oklch(0.231 0.014 267);
+  --ring: oklch(0.7 0.16 165);
+}
+.virtual.light {
+  --background: oklch(0.985 0.006 165);
+  --foreground: oklch(0.22 0.02 165);
+  --elevated: oklch(0.97 0.008 165);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.02 165);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.02 165);
+  --primary: oklch(0.58 0.17 165);
+  --primary-foreground: oklch(0.99 0.005 165);
+  --secondary: oklch(0.95 0.012 165);
+  --secondary-foreground: oklch(0.22 0.02 165);
+  --muted: oklch(0.94 0.012 165);
+  --muted-foreground: oklch(0.45 0.018 165);
+  --accent: oklch(0.92 0.016 165);
+  --accent-foreground: oklch(0.22 0.02 165);
+  --destructive: oklch(0.62 0.2 25);
+  --destructive-foreground: oklch(0.99 0.005 165);
+  --border: oklch(0.9 0.012 165);
+  --input: oklch(0.92 0.012 165);
+
+  --ring: oklch(0.58 0.17 165);
+}
+
+/* Dark theme (default — applied when no class set, e.g. before JS hydrates,
+   and when html element carries .dark explicitly). */
+:root,
+.dark {
+  --radius: 0.5rem;
+  --background: oklch(0.177 0.013 264);
+  --foreground: oklch(0.985 0.002 264);
+  --elevated: oklch(0.238 0.015 262);
+  --card: oklch(0.213 0.013 264);
+  --card-foreground: oklch(0.985 0.002 264);
+  --popover: oklch(0.243 0.016 264);
+  --popover-foreground: oklch(0.985 0.002 264);
+  --primary: oklch(0.68 0.19 145);
+  --primary-foreground: oklch(0.99 0.005 145);
+  --secondary: oklch(0.238 0.015 262);
+  --secondary-foreground: oklch(0.985 0.002 264);
+  --muted: oklch(0.20 0.013 264);
+  --muted-foreground: oklch(0.644 0.015 273);
+  --accent: oklch(0.25 0.014 264);
+  --accent-foreground: oklch(0.985 0.002 264);
+  --destructive: oklch(0.617 0.186 24);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.27 0.014 266);
+  --input: oklch(0.231 0.014 267);
+  --ring: oklch(0.68 0.19 145);
+  --yes: oklch(0.664 0.169 151);
+  --yes-foreground: oklch(0.99 0 0);
+  --no: oklch(0.617 0.186 24);
+  --no-foreground: oklch(0.99 0 0);
+  color-scheme: dark;
+}
+
+.light {
+  --background: oklch(0.99 0.006 155);
+  --foreground: oklch(0.2 0.024 155);
+  --elevated: oklch(0.97 0.008 155);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.024 155);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.024 155);
+  --primary: oklch(0.52 0.18 145);
+  --primary-foreground: oklch(0.99 0.005 145);
+  --secondary: oklch(0.95 0.012 155);
+  --secondary-foreground: oklch(0.2 0.024 155);
+  --muted: oklch(0.95 0.012 155);
+  --muted-foreground: oklch(0.45 0.018 155);
+  --accent: oklch(0.94 0.016 155);
+  --accent-foreground: oklch(0.2 0.024 155);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.99 0.005 155);
+  --border: oklch(0.9 0.012 155);
+  --input: oklch(0.92 0.012 155);
+  --ring: oklch(0.52 0.18 145);
+  --yes: oklch(0.55 0.17 145);
+  --yes-foreground: oklch(0.99 0.005 145);
+  --no: oklch(0.55 0.22 22);
+  --no-foreground: oklch(0.99 0.005 155);
+  color-scheme: light;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    width: 100%;
+    min-height: 100%;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  html {
+    width: 100%;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      transition: none;
+    }
+  }
+  html[lang="my"] body {
+    line-height: 1.75;
+    letter-spacing: 0.01em;
+  }
+  html[lang="my"] .tabular-nums {
+    line-height: 1.4;
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hide scrollbar utility */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+.game-shell {
+  min-height: calc(100vh - 4rem);
+  background:
+    radial-gradient(1200px 500px at 50% -10%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 70%),
+    radial-gradient(800px 400px at 80% 110%, color-mix(in oklab, var(--yes) 10%, transparent), transparent 65%),
+    var(--background);
+}
+
+.game-felt {
+  position: relative;
+}
+
+.game-felt::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 1.5rem 0 auto;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%);
+  filter: blur(12px);
+  z-index: 0;
+}
+
+.game-felt > * {
+  position: relative;
+  z-index: 1;
+}
+
+.invite-code-display {
+  text-shadow: 0 0 24px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+.round-card {
+  background-image: linear-gradient(180deg, color-mix(in oklab, white 4%, transparent), transparent 40%);
+}
+
+.chip-hud {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent), 0 12px 40px rgba(0, 0, 0, 0.35);
+}
