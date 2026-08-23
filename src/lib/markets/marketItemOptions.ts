@@ -93,10 +93,7 @@ function legacyBinaryOptions(
   ];
 }
 
-export function optionTitle(
-  option: ItemAnswerOption | undefined,
-  lang: "en" | "my",
-): string {
+export function optionTitle(option: ItemAnswerOption | undefined, lang: "en" | "my"): string {
   if (!option) return "";
   return option.title[lang] || option.title.en;
 }
@@ -150,7 +147,13 @@ export function buildPlaceBetPayload(
   optionId: string,
   shares: number,
   ledger: "real" | "virtual",
-): { market_item_id: string; shares: number; ledger: "real" | "virtual"; option_id?: string; side?: "yes" | "no" } {
+): {
+  market_item_id: string;
+  shares: number;
+  ledger: "real" | "virtual";
+  option_id?: string;
+  side?: "yes" | "no";
+} {
   if (isLegacyOptionId(optionId)) {
     return {
       market_item_id: marketItemId,

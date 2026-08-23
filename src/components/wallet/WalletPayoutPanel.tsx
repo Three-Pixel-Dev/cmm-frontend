@@ -1,12 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { CreditCard } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentMethodsSection } from "@/components/payment/PaymentMethodsSection";
 
 export function WalletPayoutPanel() {

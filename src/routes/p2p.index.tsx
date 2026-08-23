@@ -400,10 +400,12 @@ function P2PPage() {
                   {t("p2p.verified")} — identity verified agents.
                 </p>
                 <p className="flex gap-2">
-                  <span className="text-yes shrink-0">●</span> {t("p2p.online")} = responsive now (seen within 15 min).
+                  <span className="text-yes shrink-0">●</span> {t("p2p.online")} = responsive now
+                  (seen within 15 min).
                 </p>
                 <p className="flex gap-2">
-                  <span className="shrink-0">○</span> {t("p2p.offline")} shows last seen time when the agent portal was idle.
+                  <span className="shrink-0">○</span> {t("p2p.offline")} shows last seen time when
+                  the agent portal was idle.
                 </p>
                 <p className="flex gap-2">
                   <span className="shrink-0">⏱</span> {t("p2p.responseTime")} = avg. order

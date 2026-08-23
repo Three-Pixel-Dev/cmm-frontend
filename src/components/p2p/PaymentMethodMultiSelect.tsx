@@ -39,7 +39,13 @@ export function PaymentMethodMultiSelect({
 
   if (options.length === 0) {
     return (
-      <p id={id} className={cn("rounded-md border border-dashed border-border/60 px-3 py-2 text-sm text-muted-foreground", className)}>
+      <p
+        id={id}
+        className={cn(
+          "rounded-md border border-dashed border-border/60 px-3 py-2 text-sm text-muted-foreground",
+          className,
+        )}
+      >
         {emptyLabel}
       </p>
     );
@@ -64,7 +70,10 @@ export function PaymentMethodMultiSelect({
               disabled={disabled}
               onCheckedChange={(next) => toggle(opt.id, next === true)}
             />
-            <Label htmlFor={inputId} className="flex flex-1 cursor-pointer items-center gap-2 font-normal">
+            <Label
+              htmlFor={inputId}
+              className="flex flex-1 cursor-pointer items-center gap-2 font-normal"
+            >
               {opt.photo_url ? (
                 <img src={opt.photo_url} alt="" className="h-5 w-5 rounded object-cover" />
               ) : null}

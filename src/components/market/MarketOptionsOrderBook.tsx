@@ -31,11 +31,15 @@ export function MarketOptionsOrderBook({
             className="flex items-center justify-between gap-3 rounded px-2 py-2 tabular-nums text-xs bg-elevated/40"
           >
             <span className="min-w-0 flex-1 truncate font-medium">{optionTitle(option, lang)}</span>
-            <span className={index === 0 ? "text-yes" : index === 1 ? "text-no" : "text-foreground"}>
+            <span
+              className={index === 0 ? "text-yes" : index === 1 ? "text-no" : "text-foreground"}
+            >
               {pct}%
             </span>
             {showShareCounts && (
-              <span className="text-muted-foreground w-16 text-right">{fmtShares(activeShares)}</span>
+              <span className="text-muted-foreground w-16 text-right">
+                {fmtShares(activeShares)}
+              </span>
             )}
           </div>
         );

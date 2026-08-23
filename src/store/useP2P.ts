@@ -10,9 +10,9 @@ export type P2POrder = {
   agentId: string;
   agentName: string;
   type: P2POrderType;
-  amount: number;         // Kyat user sends/receives
-  commission: number;     // Kyat fee charged by agent
-  netAmount: number;      // amount after commission
+  amount: number; // Kyat user sends/receives
+  commission: number; // Kyat fee charged by agent
+  netAmount: number; // amount after commission
   paymentMethod: string;
   status: P2POrderStatus;
   date: string;
@@ -38,10 +38,19 @@ export const useP2P = create<State>()(
     (set, get) => ({
       orders: [],
 
-      placeP2POrder: ({ agentId, agentName, type, amount, commission, paymentMethod, applyBalance }) => {
-        const netAmount = type === "buy"
-          ? amount - commission          // user receives less after agent fee
-          : amount - commission;         // user cashes out less after agent fee
+      placeP2POrder: ({
+        agentId,
+        agentName,
+        type,
+        amount,
+        commission,
+        paymentMethod,
+        applyBalance,
+      }) => {
+        const netAmount =
+          type === "buy"
+            ? amount - commission // user receives less after agent fee
+            : amount - commission; // user cashes out less after agent fee
 
         const order: P2POrder = {
           id: `p2p-${Date.now()}`,
@@ -58,9 +67,9 @@ export const useP2P = create<State>()(
 
         // Simulate instant processing: balance updated immediately in demo
         if (type === "buy") {
-          applyBalance(netAmount);   // credit balance (deposit)
+          applyBalance(netAmount); // credit balance (deposit)
         } else {
-          applyBalance(-amount);     // debit balance (withdrawal)
+          applyBalance(-amount); // debit balance (withdrawal)
         }
 
         // Simulate status change to "completed" after 1.5s in real app
@@ -77,15 +86,13 @@ export const useP2P = create<State>()(
         if (order.type === "buy") {
           refundBalance(-order.netAmount); // reverse credit
         } else {
-          refundBalance(order.amount);     // reverse debit
+          refundBalance(order.amount); // reverse debit
         }
         set((s) => ({
-          orders: s.orders.map((o) =>
-            o.id === orderId ? { ...o, status: "cancelled" } : o
-          ),
+          orders: s.orders.map((o) => (o.id === orderId ? { ...o, status: "cancelled" } : o)),
         }));
       },
     }),
-    { name: "cmm-p2p" }
-  )
+    { name: "cmm-p2p" },
+  ),
 );

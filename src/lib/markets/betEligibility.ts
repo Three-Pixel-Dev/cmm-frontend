@@ -50,11 +50,7 @@ function previewWinningSharesAfterBet(
     : seedNo + pool.realNoShares + shares;
 }
 
-function previewTotalPool(
-  pool: PoolEligibilityState,
-  oneSharePrice: number,
-  cost: number,
-): number {
+function previewTotalPool(pool: PoolEligibilityState, oneSharePrice: number, cost: number): number {
   if (isSeedRetired(pool)) {
     return (pool.realYesShares + pool.realNoShares) * oneSharePrice + cost;
   }
@@ -165,7 +161,9 @@ export function wouldRecoverStake(
   return settlementPayoutIfSideWins(side, shares, pool, oneSharePrice, feePercentage) >= cost;
 }
 
-export function poolEligibilityFromApi(pool: ApiMarketPool | null | undefined): PoolEligibilityState {
+export function poolEligibilityFromApi(
+  pool: ApiMarketPool | null | undefined,
+): PoolEligibilityState {
   return {
     realYesShares: pool?.real_yes_count ?? 0,
     realNoShares: pool?.real_no_count ?? 0,
@@ -208,8 +206,7 @@ export function activeBetProfitIfWins(
 
   const adjusted: PoolEligibilityState = {
     ...pool,
-    realYesShares:
-      side === "yes" ? Math.max(0, pool.realYesShares - shares) : pool.realYesShares,
+    realYesShares: side === "yes" ? Math.max(0, pool.realYesShares - shares) : pool.realYesShares,
     realNoShares: side === "no" ? Math.max(0, pool.realNoShares - shares) : pool.realNoShares,
     totalPoolMoney: Math.max(0, pool.totalPoolMoney - amountPaid),
   };

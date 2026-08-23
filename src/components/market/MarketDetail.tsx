@@ -20,8 +20,18 @@ import { Clock, Share2, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { ApiMarketPool } from "@/types/market-api";
 import { poolPricingInfo } from "@/lib/markets/map";
-import { wouldRecoverStakeForOption, projectBetProfitForOption } from "@/lib/markets/optionEligibility";
-import { leadingOptionPercent, optionImpliedPercent, optionEffectiveShares, totalOptionEffectiveShares, activePoolMoney, realPoolMoney } from "@/lib/markets/optionPricing";
+import {
+  wouldRecoverStakeForOption,
+  projectBetProfitForOption,
+} from "@/lib/markets/optionEligibility";
+import {
+  leadingOptionPercent,
+  optionImpliedPercent,
+  optionEffectiveShares,
+  totalOptionEffectiveShares,
+  activePoolMoney,
+  realPoolMoney,
+} from "@/lib/markets/optionPricing";
 import { newBetIdempotencyKey } from "@/lib/api/betIdempotency";
 import {
   buildPlaceBetPayload,
@@ -104,7 +114,10 @@ function PoolStats({
           return (
             <div
               key={option.id}
-              className={cn(multi && "flex items-center justify-between gap-2 border-b border-border/40 pb-2 last:border-0 last:pb-0")}
+              className={cn(
+                multi &&
+                  "flex items-center justify-between gap-2 border-b border-border/40 pb-2 last:border-0 last:pb-0",
+              )}
             >
               <div className="min-w-0">
                 <p className="text-muted-foreground mb-0.5 line-clamp-1">
@@ -117,7 +130,11 @@ function PoolStats({
               <p
                 className={cn(
                   "shrink-0 tabular-nums font-semibold",
-                  index === 0 && options.length === 2 ? "text-yes" : index === 1 && options.length === 2 ? "text-no" : "text-foreground",
+                  index === 0 && options.length === 2
+                    ? "text-yes"
+                    : index === 1 && options.length === 2
+                      ? "text-no"
+                      : "text-foreground",
                 )}
               >
                 {pct.toFixed(1)}%
@@ -130,7 +147,9 @@ function PoolStats({
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{t("market.poolTotal")}</span>
           <span className="tabular-nums text-foreground font-medium">
-            {fmtLedger(activePoolMoney(options, legacyPool, oneSharePrice), ledger, { compact: true })}
+            {fmtLedger(activePoolMoney(options, legacyPool, oneSharePrice), ledger, {
+              compact: true,
+            })}
           </span>
         </div>
       )}
@@ -203,7 +222,10 @@ function OutcomeRow({
         </span>
       </div>
       {!resolved && answerOptions.length > 0 && (
-        <div className="flex shrink-0 flex-wrap gap-1.5 sm:ml-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex shrink-0 flex-wrap gap-1.5 sm:ml-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           {isBinary ? (
             <>
               <span className="rounded-md bg-yes/15 px-2.5 py-1 text-xs font-semibold text-yes tabular-nums">
@@ -219,7 +241,8 @@ function OutcomeRow({
                 key={opt.id}
                 className="rounded-md bg-muted px-2.5 py-1 text-xs font-semibold text-foreground tabular-nums"
               >
-                {optionTitle(opt, lang)} {optionImpliedPercent(opt, answerOptions, legacyPool).toFixed(0)}%
+                {optionTitle(opt, lang)}{" "}
+                {optionImpliedPercent(opt, answerOptions, legacyPool).toFixed(0)}%
               </span>
             ))
           )}
@@ -229,13 +252,20 @@ function OutcomeRow({
   );
 }
 
-export const MarketDetail = ({ detail: initialDetail, focusItemId, initialSide = "yes", initialOptionId }: Props) => {
+export const MarketDetail = ({
+  detail: initialDetail,
+  focusItemId,
+  initialSide = "yes",
+  initialOptionId,
+}: Props) => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as "en" | "my";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: polledDetail, dataUpdatedAt } = useMarketGroupDetail(initialDetail.id, { refetchInterval: 1_500 });
+  const { data: polledDetail, dataUpdatedAt } = useMarketGroupDetail(initialDetail.id, {
+    refetchInterval: 1_500,
+  });
   const detail = polledDetail ?? initialDetail;
 
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
@@ -309,11 +339,7 @@ export const MarketDetail = ({ detail: initialDetail, focusItemId, initialSide =
     );
 
   const noProfitAtOdds =
-    shares >= 1 &&
-    !!selectedItem &&
-    activeOptionId &&
-    !sideOvercrowded &&
-    profit.profit <= 0;
+    shares >= 1 && !!selectedItem && activeOptionId && !sideOvercrowded && profit.profit <= 0;
 
   const selectedOptionPct = Math.round(
     optionImpliedPercent(
@@ -399,7 +425,41 @@ export const MarketDetail = ({ detail: initialDetail, focusItemId, initialSide =
     const idempotency_key = newBetIdempotencyKey();
 
     if (isVirtualMode) {
-      placeBet.mutate({ ...placeBetPayload("virtual"), idempotency_key }, {
+      placeBet.mutate(
+        { ...placeBetPayload("virtual"), idempotency_key },
+        {
+          onSuccess: (result) => {
+            if (result.live) {
+              applyMarketLiveSnapshotToCache(queryClient, result.live);
+            }
+            refreshVolumeHistory();
+            toast.success(t("market.orderPlaced"), {
+              description: orderSuccessDescription(),
+            });
+            setShares(1);
+          },
+          onError: (err) => {
+            const msg = err.message.toLowerCase();
+            if (msg.includes("insufficient")) {
+              toast.error(t("market.insufficientFunds"));
+            } else if (
+              msg.includes("overcrowded") ||
+              msg.includes("recover stake") ||
+              msg.includes("option_id")
+            ) {
+              toast.error(t("market.sideOvercrowded"));
+            } else {
+              toast.error(err.message);
+            }
+          },
+        },
+      );
+      return;
+    }
+
+    placeBet.mutate(
+      { ...placeBetPayload("real"), idempotency_key },
+      {
         onSuccess: (result) => {
           if (result.live) {
             applyMarketLiveSnapshotToCache(queryClient, result.live);
@@ -414,38 +474,18 @@ export const MarketDetail = ({ detail: initialDetail, focusItemId, initialSide =
           const msg = err.message.toLowerCase();
           if (msg.includes("insufficient")) {
             toast.error(t("market.insufficientFunds"));
-          } else if (msg.includes("overcrowded") || msg.includes("recover stake") || msg.includes("option_id")) {
+          } else if (
+            msg.includes("overcrowded") ||
+            msg.includes("recover stake") ||
+            msg.includes("option_id")
+          ) {
             toast.error(t("market.sideOvercrowded"));
           } else {
             toast.error(err.message);
           }
         },
-      });
-      return;
-    }
-
-    placeBet.mutate({ ...placeBetPayload("real"), idempotency_key }, {
-      onSuccess: (result) => {
-        if (result.live) {
-          applyMarketLiveSnapshotToCache(queryClient, result.live);
-        }
-        refreshVolumeHistory();
-        toast.success(t("market.orderPlaced"), {
-          description: orderSuccessDescription(),
-        });
-        setShares(1);
       },
-      onError: (err) => {
-        const msg = err.message.toLowerCase();
-        if (msg.includes("insufficient")) {
-          toast.error(t("market.insufficientFunds"));
-        } else if (msg.includes("overcrowded") || msg.includes("recover stake") || msg.includes("option_id")) {
-          toast.error(t("market.sideOvercrowded"));
-        } else {
-          toast.error(err.message);
-        }
-      },
-    });
+    );
   };
 
   const primaryEnd = detail.items.reduce(
@@ -460,349 +500,361 @@ export const MarketDetail = ({ detail: initialDetail, focusItemId, initialSide =
 
   return (
     <>
-    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-      <div className="order-2 min-w-0 space-y-5 lg:order-1">
-        {resolved && (outcome || winnerLabel) && (
-          <div
-            className={cn(
-              "rounded-xl border px-4 py-3 flex items-center gap-3 font-semibold text-sm",
-              outcome === "no"
-                ? "border-no/40 bg-no/10 text-no"
-                : outcome === "void"
-                  ? "border-border bg-muted/40 text-muted-foreground"
-                  : "border-yes/40 bg-yes/10 text-yes",
-            )}
-          >
-            <span className="text-xl">{outcome === "no" ? "❌" : outcome === "void" ? "↩" : "✅"}</span>
-            <div>
-              <div className="text-xs uppercase tracking-widest opacity-70">
-                {t("market.resolved")}
-              </div>
-              <div>
-                {selectedItem.title[lang]}
-                {winnerLabel ? ` — ${t("market.resolvedWinner", { answer: winnerLabel })}` : outcome === "yes" ? ` — ${t("market.resolvedYes")}` : outcome === "no" ? ` — ${t("market.resolvedNo")}` : ""}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-start gap-3 sm:gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-elevated text-3xl">
-            {detail.pictureUrl ? (
-              <img
-                src={detail.pictureUrl}
-                alt={detail.title.en}
-                onError={({ currentTarget }) => {
-                  currentTarget.onerror = null; // prevents loops
-                  currentTarget.src = borkenImage;
-                }}
-                className="w-full h-full object-cover object-center"
-              />
-            ) : (
-              detail.icon
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold leading-tight">{detail.title[lang]}</h1>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              {showAuth && (
-                <span>
-                  {fmtLedger(
-                    realPoolMoney(
-                      getItemAnswerOptions(selectedItem, betMode === "real" ? "real" : "virtual", lang),
-                      betMode === "real" ? selectedItem.real_pool : selectedItem.virtual_pool,
-                      selectedItem.one_share_price,
-                    ),
-                    ledger,
-                    { compact: true },
-                  )}{" "}
-                  {t("market.volume")}
-                </span>
+      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+        <div className="order-2 min-w-0 space-y-5 lg:order-1">
+          {resolved && (outcome || winnerLabel) && (
+            <div
+              className={cn(
+                "rounded-xl border px-4 py-3 flex items-center gap-3 font-semibold text-sm",
+                outcome === "no"
+                  ? "border-no/40 bg-no/10 text-no"
+                  : outcome === "void"
+                    ? "border-border bg-muted/40 text-muted-foreground"
+                    : "border-yes/40 bg-yes/10 text-yes",
               )}
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {t("market.ends")} {fmtDate(primaryEnd, lang)}
+            >
+              <span className="text-xl">
+                {outcome === "no" ? "❌" : outcome === "void" ? "↩" : "✅"}
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {t("market.resolution")} {fmtDate(primaryResolution, lang)}
-              </span>
-              <span>{t("market.outcomesCount", { count: detail.items.length })}</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleShare}
-            aria-label={t("market.share")}
-            className="shrink-0 flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{t("market.share")}</span>
-          </button>
-        </div>
-
-        <MarketGroupVolumeChart
-          marketId={detail.id}
-          items={detail.items}
-          ledger={ledger}
-          ledgerLabel={ledger}
-          lang={lang}
-          showVolume={showAuth}
-          forceLiveAppendKey={dataUpdatedAt}
-        />
-
-        <div className="rounded-xl border border-border/60 bg-card p-4">
-          <h2 className="text-sm font-semibold mb-3">{t("market.outcomes")}</h2>
-          <div className="space-y-1">
-            {detail.items.map((item) => (
-              <OutcomeRow
-                key={item.id}
-                item={item}
-                groupIcon={detail.icon}
-                selected={item.id === selectedItem.id}
-                onSelect={() => setSelectedId(item.id)}
-                lang={lang}
-                ledger={ledger}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border/60 bg-card p-4">
-          <h2 className="text-sm font-semibold mb-1">{selectedItem.title[lang]}</h2>
-          <p className="text-xs text-muted-foreground mb-3">{t("market.liquidity")}</p>
-          <PoolStats
-            options={answerOptions}
-            legacyPool={pool ?? null}
-            oneSharePrice={selectedItem.one_share_price}
-            ledger={ledger}
-            showPoolTotal={showAuth}
-            showParticipants={showAuth}
-            lang={lang}
-          />
-        </div>
-
-        <div className="rounded-xl border border-border/60 bg-card p-5">
-          <h2 className="mb-2 text-sm font-semibold">{t("market.about")}</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-            {detail.description[lang]}
-          </p>
-          {selectedItem.description[lang] && (
-            <>
-              <p className="text-xs font-medium text-foreground mb-1">{t("market.resolution")}</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {selectedItem.description[lang]}
-              </p>
-            </>
-          )}
-        </div>
-
-        <div className="rounded-xl border border-border/60 bg-card p-5">
-          <h2 className="mb-3 text-sm font-semibold">{t("market.orderBook")}</h2>
-          <MarketOptionsOrderBook
-            options={answerOptions}
-            legacyPool={pool}
-            lang={lang}
-            showShareCounts={showAuth}
-          />
-        </div>
-      </div>
-
-      <aside
-        id="bet-panel"
-        className="order-1 w-full space-y-3 self-start lg:order-2 lg:sticky lg:top-20"
-      >
-        <p className="text-xs text-muted-foreground line-clamp-2 px-1">
-          {selectedItem.title[lang]}
-        </p>
-        <div
-          className={cn(
-            "rounded-xl border border-border/60 bg-card p-4 shadow-lg",
-            isVirtualMode && "border-primary/40 bg-primary/5",
-          )}
-        >
-          {isVirtualMode && (
-            <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                <Trophy className="h-4 w-4" aria-hidden />
-                {t("market.virtualModeActive")}
+              <div>
+                <div className="text-xs uppercase tracking-widest opacity-70">
+                  {t("market.resolved")}
+                </div>
+                <div>
+                  {selectedItem.title[lang]}
+                  {winnerLabel
+                    ? ` — ${t("market.resolvedWinner", { answer: winnerLabel })}`
+                    : outcome === "yes"
+                      ? ` — ${t("market.resolvedYes")}`
+                      : outcome === "no"
+                        ? ` — ${t("market.resolvedNo")}`
+                        : ""}
+                </div>
               </div>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {t("market.virtualModeBettingDesc")}
-              </p>
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground mb-1">{t("market.selectAnswer")}</p>
-          <MarketOptionPicker
-            options={answerOptions}
-            selectedId={activeOptionId}
-            onSelect={setSelectedOptionId}
-            legacyPool={pool}
+          <div className="flex flex-wrap items-start gap-3 sm:gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-elevated text-3xl">
+              {detail.pictureUrl ? (
+                <img
+                  src={detail.pictureUrl}
+                  alt={detail.title.en}
+                  onError={({ currentTarget }) => {
+                    currentTarget.onerror = null; // prevents loops
+                    currentTarget.src = borkenImage;
+                  }}
+                  className="w-full h-full object-cover object-center"
+                />
+              ) : (
+                detail.icon
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold leading-tight">{detail.title[lang]}</h1>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                {showAuth && (
+                  <span>
+                    {fmtLedger(
+                      realPoolMoney(
+                        getItemAnswerOptions(
+                          selectedItem,
+                          betMode === "real" ? "real" : "virtual",
+                          lang,
+                        ),
+                        betMode === "real" ? selectedItem.real_pool : selectedItem.virtual_pool,
+                        selectedItem.one_share_price,
+                      ),
+                      ledger,
+                      { compact: true },
+                    )}{" "}
+                    {t("market.volume")}
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {t("market.ends")} {fmtDate(primaryEnd, lang)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {t("market.resolution")} {fmtDate(primaryResolution, lang)}
+                </span>
+                <span>{t("market.outcomesCount", { count: detail.items.length })}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleShare}
+              aria-label={t("market.share")}
+              className="shrink-0 flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t("market.share")}</span>
+            </button>
+          </div>
+
+          <MarketGroupVolumeChart
+            marketId={detail.id}
+            items={detail.items}
+            ledger={ledger}
+            ledgerLabel={ledger}
             lang={lang}
-            binaryStyle={isBinaryAnswers}
+            showVolume={showAuth}
+            forceLiveAppendKey={dataUpdatedAt}
           />
 
-          <label className="text-xs text-muted-foreground">{t("market.shares")}</label>
-          <div className="relative mt-1 mb-2">
-            <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
-              {t("market.shares")}
-            </span>
-            <Input
-              type="number"
-              value={shares === 0 ? "" : shares}
-              onChange={(e) => setShares(e.target.value ? parseInt(e.target.value) : 0)}
-              className="h-12 text-lg font-semibold tabular-nums bg-elevated"
+          <div className="rounded-xl border border-border/60 bg-card p-4">
+            <h2 className="text-sm font-semibold mb-3">{t("market.outcomes")}</h2>
+            <div className="space-y-1">
+              {detail.items.map((item) => (
+                <OutcomeRow
+                  key={item.id}
+                  item={item}
+                  groupIcon={detail.icon}
+                  selected={item.id === selectedItem.id}
+                  onSelect={() => setSelectedId(item.id)}
+                  lang={lang}
+                  ledger={ledger}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border/60 bg-card p-4">
+            <h2 className="text-sm font-semibold mb-1">{selectedItem.title[lang]}</h2>
+            <p className="text-xs text-muted-foreground mb-3">{t("market.liquidity")}</p>
+            <PoolStats
+              options={answerOptions}
+              legacyPool={pool ?? null}
+              oneSharePrice={selectedItem.one_share_price}
+              ledger={ledger}
+              showPoolTotal={showAuth}
+              showParticipants={showAuth}
+              lang={lang}
             />
           </div>
 
-          <div className="mb-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2">
-            {[1, 5, 10, 50].map((mult) => {
-              const v = selectedItem.one_share_price * mult;
-              return (
-                <button
-                  key={mult}
-                  type="button"
-                  onClick={() => setShares(mult)}
-                  className="rounded-md border border-border bg-elevated py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground sm:flex-1"
-                >
-                  {mult === 1 ? fmtLedger(v, ledger) : fmtLedger(v, ledger, { compact: true })}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="space-y-1.5 rounded-lg bg-elevated/60 p-3 text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("market.shares")}</span>
-              <span className="tabular-nums">{shares}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("market.amount")}</span>
-              <span className="tabular-nums">{fmtLedger(shares * selectedItem.one_share_price, ledger)}</span>
-            </div>
-            <div className="flex justify-between text-sm font-semibold border-t border-border/60 pt-1.5">
-              <span>{t("market.profit")}</span>
-              <span className={cn("tabular-nums", profit.profit >= 0 ? "text-yes" : "text-no")}>
-                {profit.profit !== 0
-                  ? `~${fmtLedger(profit.profit, ledger)}`
-                  : fmtLedger(0, ledger)}
-              </span>
-            </div>
-            <p className="pt-1 text-[10px] leading-relaxed text-muted-foreground">
-              {t("market.profitDisclaimer")}
+          <div className="rounded-xl border border-border/60 bg-card p-5">
+            <h2 className="mb-2 text-sm font-semibold">{t("market.about")}</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              {detail.description[lang]}
             </p>
+            {selectedItem.description[lang] && (
+              <>
+                <p className="text-xs font-medium text-foreground mb-1">{t("market.resolution")}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {selectedItem.description[lang]}
+                </p>
+              </>
+            )}
           </div>
 
-          {sideOvercrowded && (
-            <div className="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 leading-relaxed">
-              {t("market.sideOvercrowded")}
-            </div>
-          )}
+          <div className="rounded-xl border border-border/60 bg-card p-5">
+            <h2 className="mb-3 text-sm font-semibold">{t("market.orderBook")}</h2>
+            <MarketOptionsOrderBook
+              options={answerOptions}
+              legacyPool={pool}
+              lang={lang}
+              showShareCounts={showAuth}
+            />
+          </div>
+        </div>
 
-          {noProfitAtOdds && (
-            <div className="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 leading-relaxed">
-              {t("market.noProfitAtCurrentOdds")}
-            </div>
-          )}
-
-          {showAuth && (
-            <div className="mt-2 rounded-lg bg-elevated/40 px-3 py-2 text-xs space-y-1">
-              <div className="flex justify-between text-muted-foreground">
-                <span>{t("market.poolTotal")}</span>
-                <span className="font-medium text-foreground tabular-nums">
-                  {fmtLedger(
-                    pool
-                      ? activePoolMoney(answerOptions, pool, selectedItem.one_share_price)
-                      : 0,
-                    ledger,
-                    { compact: true },
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>{t("market.totalShares")}</span>
-                <span className="font-medium text-foreground tabular-nums">
-                  {totalActiveShares.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <Button
-            onClick={handlePlace}
-            disabled={resolved || !canPlace}
-            className={cn(
-              "mt-3 hidden h-12 w-full text-base font-semibold lg:flex",
-              isBinaryAnswers && activeOptionId.includes("no")
-                ? "bg-no hover:bg-no/90"
-                : "bg-yes hover:bg-yes/90",
-            )}
-          >
-            {resolved
-              ? t("market.resolved")
-              : placeBet.isPending
-                ? t("market.placing")
-                : !showAuth
-                  ? t("market.loginToBet")
-                  : isVirtualMode
-                    ? t("market.placeVirtualOrder")
-                    : t("market.placeOrder")}
-          </Button>
-
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            {showAuth
-              ? `${isVirtualMode ? t("wallet.playBalance") : t("market.balance")}: ${fmtLedger(balance, ledger)}`
-              : t("market.loginToBet")}
+        <aside
+          id="bet-panel"
+          className="order-1 w-full space-y-3 self-start lg:order-2 lg:sticky lg:top-20"
+        >
+          <p className="text-xs text-muted-foreground line-clamp-2 px-1">
+            {selectedItem.title[lang]}
           </p>
-        </div>
-
-        <p className="text-[10px] text-center text-muted-foreground px-2">
-          {timeRemaining(selectedItem.close_time)}
-        </p>
-      </aside>
-    </div>
-
-    {!resolved && (
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium">{selectedItem.title[lang]}</p>
-            <p className="text-[11px] text-muted-foreground tabular-nums">
-              {optionTitle(selectedAnswer, lang)} · {selectedOptionPct}%
-            </p>
-          </div>
-          <Button
-            onClick={handlePlace}
-            disabled={resolved || !canPlace}
-            size="sm"
+          <div
             className={cn(
-              "h-10 shrink-0 px-4 font-semibold",
-              isBinaryAnswers && activeOptionId.includes("no")
-                ? "bg-no hover:bg-no/90"
-                : "bg-yes hover:bg-yes/90",
+              "rounded-xl border border-border/60 bg-card p-4 shadow-lg",
+              isVirtualMode && "border-primary/40 bg-primary/5",
             )}
           >
-            {resolved
-              ? t("market.resolved")
-              : placeBet.isPending
-                ? t("market.placing")
-                : !showAuth
-                  ? t("market.loginToBet")
-                  : t("market.placeOrder")}
-          </Button>
-        </div>
-      </div>
-    )}
+            {isVirtualMode && (
+              <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                  <Trophy className="h-4 w-4" aria-hidden />
+                  {t("market.virtualModeActive")}
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {t("market.virtualModeBettingDesc")}
+                </p>
+              </div>
+            )}
 
-    <ShareMarketDialog
-      open={shareOpen}
-      onOpenChange={setShareOpen}
-      marketId={detail.id}
-      title={detail.title[lang]}
-      description={detail.description.en}
-      affiliateRatePercent={detail.affiliateRatePercent}
-    />
+            <p className="text-xs text-muted-foreground mb-1">{t("market.selectAnswer")}</p>
+            <MarketOptionPicker
+              options={answerOptions}
+              selectedId={activeOptionId}
+              onSelect={setSelectedOptionId}
+              legacyPool={pool}
+              lang={lang}
+              binaryStyle={isBinaryAnswers}
+            />
+
+            <label className="text-xs text-muted-foreground">{t("market.shares")}</label>
+            <div className="relative mt-1 mb-2">
+              <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+                {t("market.shares")}
+              </span>
+              <Input
+                type="number"
+                value={shares === 0 ? "" : shares}
+                onChange={(e) => setShares(e.target.value ? parseInt(e.target.value) : 0)}
+                className="h-12 text-lg font-semibold tabular-nums bg-elevated"
+              />
+            </div>
+
+            <div className="mb-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2">
+              {[1, 5, 10, 50].map((mult) => {
+                const v = selectedItem.one_share_price * mult;
+                return (
+                  <button
+                    key={mult}
+                    type="button"
+                    onClick={() => setShares(mult)}
+                    className="rounded-md border border-border bg-elevated py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground sm:flex-1"
+                  >
+                    {mult === 1 ? fmtLedger(v, ledger) : fmtLedger(v, ledger, { compact: true })}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="space-y-1.5 rounded-lg bg-elevated/60 p-3 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("market.shares")}</span>
+                <span className="tabular-nums">{shares}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("market.amount")}</span>
+                <span className="tabular-nums">
+                  {fmtLedger(shares * selectedItem.one_share_price, ledger)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm font-semibold border-t border-border/60 pt-1.5">
+                <span>{t("market.profit")}</span>
+                <span className={cn("tabular-nums", profit.profit >= 0 ? "text-yes" : "text-no")}>
+                  {profit.profit !== 0
+                    ? `~${fmtLedger(profit.profit, ledger)}`
+                    : fmtLedger(0, ledger)}
+                </span>
+              </div>
+              <p className="pt-1 text-[10px] leading-relaxed text-muted-foreground">
+                {t("market.profitDisclaimer")}
+              </p>
+            </div>
+
+            {sideOvercrowded && (
+              <div className="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 leading-relaxed">
+                {t("market.sideOvercrowded")}
+              </div>
+            )}
+
+            {noProfitAtOdds && (
+              <div className="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 leading-relaxed">
+                {t("market.noProfitAtCurrentOdds")}
+              </div>
+            )}
+
+            {showAuth && (
+              <div className="mt-2 rounded-lg bg-elevated/40 px-3 py-2 text-xs space-y-1">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>{t("market.poolTotal")}</span>
+                  <span className="font-medium text-foreground tabular-nums">
+                    {fmtLedger(
+                      pool ? activePoolMoney(answerOptions, pool, selectedItem.one_share_price) : 0,
+                      ledger,
+                      { compact: true },
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>{t("market.totalShares")}</span>
+                  <span className="font-medium text-foreground tabular-nums">
+                    {totalActiveShares.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <Button
+              onClick={handlePlace}
+              disabled={resolved || !canPlace}
+              className={cn(
+                "mt-3 hidden h-12 w-full text-base font-semibold lg:flex",
+                isBinaryAnswers && activeOptionId.includes("no")
+                  ? "bg-no hover:bg-no/90"
+                  : "bg-yes hover:bg-yes/90",
+              )}
+            >
+              {resolved
+                ? t("market.resolved")
+                : placeBet.isPending
+                  ? t("market.placing")
+                  : !showAuth
+                    ? t("market.loginToBet")
+                    : isVirtualMode
+                      ? t("market.placeVirtualOrder")
+                      : t("market.placeOrder")}
+            </Button>
+
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              {showAuth
+                ? `${isVirtualMode ? t("wallet.playBalance") : t("market.balance")}: ${fmtLedger(balance, ledger)}`
+                : t("market.loginToBet")}
+            </p>
+          </div>
+
+          <p className="text-[10px] text-center text-muted-foreground px-2">
+            {timeRemaining(selectedItem.close_time)}
+          </p>
+        </aside>
+      </div>
+
+      {!resolved && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-[1400px] items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-medium">{selectedItem.title[lang]}</p>
+              <p className="text-[11px] text-muted-foreground tabular-nums">
+                {optionTitle(selectedAnswer, lang)} · {selectedOptionPct}%
+              </p>
+            </div>
+            <Button
+              onClick={handlePlace}
+              disabled={resolved || !canPlace}
+              size="sm"
+              className={cn(
+                "h-10 shrink-0 px-4 font-semibold",
+                isBinaryAnswers && activeOptionId.includes("no")
+                  ? "bg-no hover:bg-no/90"
+                  : "bg-yes hover:bg-yes/90",
+              )}
+            >
+              {resolved
+                ? t("market.resolved")
+                : placeBet.isPending
+                  ? t("market.placing")
+                  : !showAuth
+                    ? t("market.loginToBet")
+                    : t("market.placeOrder")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <ShareMarketDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        marketId={detail.id}
+        title={detail.title[lang]}
+        description={detail.description.en}
+        affiliateRatePercent={detail.affiliateRatePercent}
+      />
     </>
   );
 };

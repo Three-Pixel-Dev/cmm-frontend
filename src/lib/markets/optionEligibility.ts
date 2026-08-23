@@ -32,11 +32,7 @@ function otherRealLiquidity(targetId: string, options: ItemAnswerOption[]): numb
   return sum;
 }
 
-function otherLiquidity(
-  targetId: string,
-  options: ItemAnswerOption[],
-  retired: boolean,
-): number {
+function otherLiquidity(targetId: string, options: ItemAnswerOption[], retired: boolean): number {
   let sum = 0;
   for (const o of options) {
     if (o.id === targetId) continue;
@@ -58,7 +54,11 @@ function previewTotalPool(
   return (legacyPool?.total_pool ?? 0) + cost;
 }
 
-function settlementTotalPool(options: ItemAnswerOption[], oneSharePrice: number, cost: number): number {
+function settlementTotalPool(
+  options: ItemAnswerOption[],
+  oneSharePrice: number,
+  cost: number,
+): number {
   const realTotal = options.reduce((s, o) => s + o.realCount, 0);
   return realTotal * oneSharePrice + cost;
 }
@@ -147,7 +147,9 @@ export function wouldRecoverStakeForOption(
 
   const cost = shares * oneSharePrice;
   if (cost <= 0) return false;
-  return settlementPayoutIfOptionWins(optionId, shares, options, oneSharePrice, feePercentage) >= cost;
+  return (
+    settlementPayoutIfOptionWins(optionId, shares, options, oneSharePrice, feePercentage) >= cost
+  );
 }
 
 export function projectBetProfitForOption(

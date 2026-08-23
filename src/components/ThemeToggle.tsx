@@ -50,10 +50,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           {t("settings.appearance")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup
-          value={theme}
-          onValueChange={(v) => setTheme(v as ThemeMode)}
-        >
+        <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as ThemeMode)}>
           <DropdownMenuRadioItem value="light" className="gap-2">
             <Sun className="h-4 w-4" aria-hidden="true" /> {t("settings.lightMode")}
           </DropdownMenuRadioItem>

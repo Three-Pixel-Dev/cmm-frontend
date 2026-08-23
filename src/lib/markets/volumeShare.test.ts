@@ -87,17 +87,11 @@ describe("volumeShare", () => {
 
   it("recomputes yes chance when one item's yes share grows", () => {
     const before = computeGroupVolumeShares(
-      [
-        item("a", 110_000, 10, 12),
-        item("b", 110_000, 12, 10),
-      ],
+      [item("a", 110_000, 10, 12), item("b", 110_000, 12, 10)],
       "real",
     );
     const after = computeGroupVolumeShares(
-      [
-        item("a", 120_000, 15, 12),
-        item("b", 110_000, 12, 10),
-      ],
+      [item("a", 120_000, 15, 12), item("b", 110_000, 12, 10)],
       "real",
     );
 
@@ -110,11 +104,7 @@ describe("volumeShare", () => {
   it("appends live points and trims to selected range", () => {
     const now = Date.now();
     const history = [{ t: now - 30 * 60 * 1000, a: 50, b: 50 }];
-    const live = buildLiveVolumePoint(
-      [item("a", 600, 6, 4), item("b", 400, 2, 8)],
-      "real",
-      now,
-    );
+    const live = buildLiveVolumePoint([item("a", 600, 6, 4), item("b", 400, 2, 8)], "real", now);
     const merged = mergeVolumeHistoryWithLivePoint(history, live, "1H", ["a", "b"]);
 
     expect(merged).toHaveLength(2);
@@ -263,10 +253,7 @@ describe("volumeShare", () => {
       [],
       "en",
     );
-    const projected = projectVolumeRowsForChart(
-      [{ t: now, [idA]: 45.45, [idB]: 54.55 }],
-      lines,
-    );
+    const projected = projectVolumeRowsForChart([{ t: now, [idA]: 45.45, [idB]: 54.55 }], lines);
     expect(projected[0].s0).toBeCloseTo(45.45, 2);
     expect(projected[0].s1).toBeCloseTo(54.55, 2);
   });
@@ -316,7 +303,10 @@ describe("volumeShare", () => {
 
   it("volumeChartTimeDomain spans full historical window", () => {
     const end = Date.UTC(2026, 5, 30, 12, 0, 0);
-    const rows = [{ t: end - 2 * 60 * 1000, a: 50 }, { t: end, a: 60 }];
+    const rows = [
+      { t: end - 2 * 60 * 1000, a: 50 },
+      { t: end, a: 60 },
+    ];
     expect(volumeChartTimeDomain(rows, "5MIN")).toEqual([end - 5 * 60 * 1000, end]);
   });
 

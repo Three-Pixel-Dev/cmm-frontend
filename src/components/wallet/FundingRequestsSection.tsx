@@ -24,7 +24,10 @@ import type { ApiWalletFundingRequest, WalletFundingStatus } from "@/lib/api/typ
 import { fmtKyat } from "@/lib/format";
 import { toast } from "sonner";
 
-const STATUS_VARIANT: Record<WalletFundingStatus, "default" | "secondary" | "destructive" | "outline"> = {
+const STATUS_VARIANT: Record<
+  WalletFundingStatus,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   pending: "secondary",
   approved: "default",
   rejected: "destructive",
@@ -70,9 +73,7 @@ export function FundingRequestsSection({ embedded }: { embedded?: boolean }) {
 
   if (items.length === 0) {
     return (
-      <p className="py-6 text-center text-sm text-muted-foreground">
-        {t("wallet.funding.empty")}
-      </p>
+      <p className="py-6 text-center text-sm text-muted-foreground">{t("wallet.funding.empty")}</p>
     );
   }
 

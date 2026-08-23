@@ -1,4 +1,10 @@
-export type PaymentMethod = "KBZ Pay" | "Wave Pay" | "AYA Pay" | "CB Pay" | "Cash" | "Bank Transfer";
+export type PaymentMethod =
+  | "KBZ Pay"
+  | "Wave Pay"
+  | "AYA Pay"
+  | "CB Pay"
+  | "Cash"
+  | "Bank Transfer";
 
 export type Agent = {
   id: string;
@@ -9,10 +15,10 @@ export type Agent = {
   lastSeenAt?: string;
   avgProcessingSeconds?: number;
   completedTrades: number;
-  completionRate: number;   // 0-100 %
-  responseTime: string;     // formatted avg processing e.g. "~3 min"
-  score: number;            // 0-100
-  commissionRate: number;   // % e.g. 1.5
+  completionRate: number; // 0-100 %
+  responseTime: string; // formatted avg processing e.g. "~3 min"
+  score: number; // 0-100
+  commissionRate: number; // % e.g. 1.5
   limits: { min: number; max: number }; // Kyat
   paymentMethods: PaymentMethod[];
   supports: "both" | "buy" | "sell";

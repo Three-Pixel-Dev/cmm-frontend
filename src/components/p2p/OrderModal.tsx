@@ -352,9 +352,7 @@ export function P2POrderModal({
                 <Row
                   label={t("p2p.responseTime")}
                   value={
-                    agent.responseTime === "—"
-                      ? t("p2p.noProcessingData")
-                      : agent.responseTime
+                    agent.responseTime === "—" ? t("p2p.noProcessingData") : agent.responseTime
                   }
                 />
                 {isBuy && slipUrl && (

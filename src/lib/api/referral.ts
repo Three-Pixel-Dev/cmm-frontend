@@ -29,10 +29,9 @@ export const referralApi = {
 
   resolve: (ref: string) =>
     http
-      .get<ApiEnvelope<{ market_id: string; affiliate_rate_percent: number; code: string }>>(
-        "/referral/resolve",
-        { params: { ref } },
-      )
+      .get<
+        ApiEnvelope<{ market_id: string; affiliate_rate_percent: number; code: string }>
+      >("/referral/resolve", { params: { ref } })
       .then((r) => unwrap(r.data)),
 
   recordClick: (body: { code: string; market_id: string }) =>

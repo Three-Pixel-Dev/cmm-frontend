@@ -47,7 +47,9 @@ export function ShareMarketDialog({
   }, [open]);
 
   const url = shareUrlForMarket(marketId, link, isLoggedIn);
-  const rate = isLoggedIn ? (link?.affiliate_rate_percent ?? affiliateRatePercent) : affiliateRatePercent;
+  const rate = isLoggedIn
+    ? (link?.affiliate_rate_percent ?? affiliateRatePercent)
+    : affiliateRatePercent;
   const showEarn = isLoggedIn && rate > 0;
 
   const copyUrl = async () => {

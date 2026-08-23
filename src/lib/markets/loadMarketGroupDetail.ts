@@ -2,7 +2,12 @@ import type { Bilingual } from "@/data/markets";
 import type { ApiMarketGroup } from "@/types/market-api";
 import { marketsApi } from "@/lib/api/markets";
 import { fetchMarketGroup } from "@/lib/api/serverFetch";
-import { ApiMarketItemOption, ApiMarketOutcome, ApiMarketPool, ApiMarketStatus } from "@/types/market-api";
+import {
+  ApiMarketItemOption,
+  ApiMarketOutcome,
+  ApiMarketPool,
+  ApiMarketStatus,
+} from "@/types/market-api";
 
 export type MarketItemOption = ApiMarketItemOption;
 

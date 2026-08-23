@@ -67,9 +67,7 @@ export function buildMarketShareImage(market: MarketDetails, siteUrl: string): s
 
 export type HeadResult = {
   meta: Array<
-    | { title: string }
-    | { name: string; content: string }
-    | { property: string; content: string }
+    { title: string } | { name: string; content: string } | { property: string; content: string }
   >;
   links?: Array<{ rel: string; href: string }>;
 };

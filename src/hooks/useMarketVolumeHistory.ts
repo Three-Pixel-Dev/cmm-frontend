@@ -69,11 +69,7 @@ export function useMarketVolumeHistory({
     },
     staleTime: 0,
     refetchInterval:
-      range === "5MIN" || range === "15MIN"
-        ? 5_000
-        : range === "1H"
-          ? 15_000
-          : false,
+      range === "5MIN" || range === "15MIN" ? 5_000 : range === "1H" ? 15_000 : false,
     refetchIntervalInBackground: true,
   });
 
@@ -139,16 +135,7 @@ export function useMarketVolumeHistory({
 
     const historical = buildHistoricalChartRows(baseRows, range, itemIds);
     return projectVolumeRowsForChart(historical, chartLines, range);
-  }, [
-    isLive,
-    liveRows,
-    itemIds,
-    chartLines,
-    historyQuery.data?.series,
-    items,
-    ledger,
-    range,
-  ]);
+  }, [isLive, liveRows, itemIds, chartLines, historyQuery.data?.series, items, ledger, range]);
 
   const legendPct = useMemo(() => computeGroupVolumeShares(items, ledger), [items, ledger]);
 

@@ -1,15 +1,7 @@
 import { useId, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  Pencil,
-  Plus,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { Eye, EyeOff, Loader2, Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -73,11 +65,7 @@ function PaymentMethodRow({
             )}
             title={revealed ? m.address : undefined}
           >
-            {revealed ? (
-              m.address
-            ) : (
-              <span aria-hidden>{"•".repeat(12)}</span>
-            )}
+            {revealed ? m.address : <span aria-hidden>{"•".repeat(12)}</span>}
             {!revealed && <span className="sr-only">{t("payment.addressHidden")}</span>}
           </p>
           <Button
@@ -264,9 +252,7 @@ export function PaymentMethodsSection({ embedded = false }: { embedded?: boolean
           <AlertDialogFooter>
             <AlertDialogCancel disabled={removeM.isPending}>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
-              className={cn(
-                "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-              )}
+              className={cn("bg-destructive text-destructive-foreground hover:bg-destructive/90")}
               disabled={removeM.isPending || !deleteTarget}
               onClick={(e) => {
                 e.preventDefault();

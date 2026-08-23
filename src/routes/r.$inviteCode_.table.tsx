@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CreateRoundForm } from "@/components/game/CreateRoundForm";
 import { RoundCard } from "@/components/game/RoundCard";
+import { RoomChat } from "@/components/game/RoomChat";
 import { useHydrated } from "@/hooks/useHydrated";
 import {
   useCollectRoomTabs,
@@ -35,7 +36,9 @@ function RoomTablePage() {
   const tabsQ = useRoomTabs(room?.id, !!room?.is_admin);
   const collectM = useCollectRoomTabs(room?.id);
   const { data: wallet } = useWallet(isLoggedIn ? user?.id : undefined);
-  const chips = parseWalletAmount(room?.join_payment_mode === "free" ? wallet?.virtual_amount : wallet?.amount);
+  const chips = parseWalletAmount(
+    room?.join_payment_mode === "free" ? wallet?.virtual_amount : wallet?.amount,
+  );
 
   if (!hydrated || previewQ.isLoading || (isLoggedIn && roomQ.isLoading && previewQ.data)) {
     return (
@@ -66,7 +69,7 @@ function RoomTablePage() {
 
   return (
     <main className="game-shell">
-      <div className="game-felt mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
+      <div className="game-felt mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
         <header className="chip-hud flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/50 px-4 py-3">
           <div>
             <Link
@@ -128,27 +131,45 @@ function RoomTablePage() {
           </div>
         ) : null}
 
-        <section className="space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Rounds
-          </h2>
-          {marketsQ.isLoading ? (
-            <div className="flex min-h-40 items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Rounds
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                {groups.length} {groups.length === 1 ? "round" : "rounds"}
+              </span>
             </div>
-          ) : groups.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-white/15 px-4 py-10 text-center text-sm text-muted-foreground">
-              No rounds yet.
-              {room.is_admin ? " Deal one from the host panel." : " Wait for the host."}
-            </p>
-          ) : (
-            <div className="grid gap-4 lg:grid-cols-2">
-              {groups.map((group) => (
-                <RoundCard key={group.id} group={group} roomId={room.id} isHost={room.is_admin} isFree={room.join_payment_mode === "free"} />
-              ))}
-            </div>
-          )}
-        </section>
+
+            {marketsQ.isLoading ? (
+              <div className="flex min-h-40 items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : groups.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-white/15 px-4 py-10 text-center text-sm text-muted-foreground">
+                No rounds yet.
+                {room.is_admin ? " Deal one from the host panel." : " Wait for the host."}
+              </p>
+            ) : (
+              <div className="grid gap-4">
+                {groups.map((group) => (
+                  <RoundCard
+                    key={group.id}
+                    group={group}
+                    roomId={room.id}
+                    isHost={room.is_admin}
+                    isFree={room.join_payment_mode === "free"}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <aside className="sticky top-20 self-start">
+            <RoomChat roomId={room.id} isMember={room.is_member} />
+          </aside>
+        </div>
       </div>
     </main>
   );

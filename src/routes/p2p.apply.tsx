@@ -20,7 +20,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -72,7 +79,15 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
-type ApplyView = "login" | "loading" | "error" | "agent" | "pending" | "approved" | "rejected" | "form";
+type ApplyView =
+  | "login"
+  | "loading"
+  | "error"
+  | "agent"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "form";
 
 function P2PApplyPage() {
   const { t, i18n } = useTranslation();
@@ -193,10 +208,7 @@ function P2PApplyPage() {
   );
 
   return (
-    <main
-      className="mx-auto max-w-2xl px-4 py-8 sm:py-10"
-      aria-labelledby="p2p-apply-heading"
-    >
+    <main className="mx-auto max-w-2xl px-4 py-8 sm:py-10" aria-labelledby="p2p-apply-heading">
       <Link
         to="/p2p"
         className="mb-6 inline-flex min-h-11 items-center gap-2 rounded-lg px-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -287,9 +299,7 @@ function P2PApplyPage() {
           />
           <ReviewTimeline />
           <ApplicationSummary app={app} locale={i18n.language} />
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-            {browseP2pAction}
-          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">{browseP2pAction}</div>
         </div>
       )}
 
@@ -362,10 +372,7 @@ function ReviewTimeline() {
         <CardDescription>{t("p2p.apply.statusPendingHint")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ol
-          className="space-y-0"
-          aria-label={t("p2p.apply.nextSteps")}
-        >
+        <ol className="space-y-0" aria-label={t("p2p.apply.nextSteps")}>
           {steps.map((step, i) => (
             <li key={step.label} className="flex gap-3">
               <div className="flex flex-col items-center">
@@ -382,7 +389,10 @@ function ReviewTimeline() {
                 </span>
                 {i < steps.length - 1 && (
                   <span
-                    className={cn("my-1 w-0.5 flex-1 min-h-6", step.done ? "bg-yes/40" : "bg-border")}
+                    className={cn(
+                      "my-1 w-0.5 flex-1 min-h-6",
+                      step.done ? "bg-yes/40" : "bg-border",
+                    )}
                     aria-hidden
                   />
                 )}
@@ -391,7 +401,11 @@ function ReviewTimeline() {
                 <p
                   className={cn(
                     "text-sm font-medium",
-                    step.current ? "text-foreground" : step.done ? "text-yes" : "text-muted-foreground",
+                    step.current
+                      ? "text-foreground"
+                      : step.done
+                        ? "text-yes"
+                        : "text-muted-foreground",
                   )}
                 >
                   {step.label}
@@ -420,9 +434,18 @@ function ApplicationSummary({ app, locale }: { app: ApiP2PApplication; locale: s
   const rows = [
     { label: t("p2p.apply.submittedOn"), value: fmtDate(app.created_at, locale) },
     { label: t("p2p.apply.phone"), value: app.phone_number },
-    { label: t("p2p.apply.platformPurchasePayment"), value: paymentMethodsLabel(app.platform_purchase_payment_methods, p2pPaymentTypes) },
-    { label: t("p2p.apply.userTradePayment"), value: paymentMethodsLabel(app.user_trade_payment_methods, userPaymentTypes) },
-    { label: t("p2p.apply.workingCapital"), value: app.working_capital ? Number(app.working_capital).toLocaleString(locale) : undefined },
+    {
+      label: t("p2p.apply.platformPurchasePayment"),
+      value: paymentMethodsLabel(app.platform_purchase_payment_methods, p2pPaymentTypes),
+    },
+    {
+      label: t("p2p.apply.userTradePayment"),
+      value: paymentMethodsLabel(app.user_trade_payment_methods, userPaymentTypes),
+    },
+    {
+      label: t("p2p.apply.workingCapital"),
+      value: app.working_capital ? Number(app.working_capital).toLocaleString(locale) : undefined,
+    },
     { label: t("p2p.apply.incomePreference"), value: incomePreferenceLabel(app.income_preference) },
     { label: t("p2p.apply.proposedCommissionShort"), value: `${app.proposed_commission_rate}%` },
   ].filter((r) => r.value);
@@ -433,7 +456,8 @@ function ApplicationSummary({ app, locale }: { app: ApiP2PApplication; locale: s
     { label: t("p2p.apply.note"), value: app.note },
   ].filter((r) => r.value);
 
-  if (rows.length === 0 && textBlocks.length === 0 && !app.nrc_front_url && !app.nrc_back_url) return null;
+  if (rows.length === 0 && textBlocks.length === 0 && !app.nrc_front_url && !app.nrc_back_url)
+    return null;
 
   return (
     <Card>
@@ -455,7 +479,9 @@ function ApplicationSummary({ app, locale }: { app: ApiP2PApplication; locale: s
         )}
         {textBlocks.map(({ label, value }) => (
           <div key={label} className="space-y-0.5">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {label}
+            </p>
             <p className="text-sm text-foreground whitespace-pre-wrap">{value}</p>
           </div>
         ))}
@@ -605,12 +631,7 @@ function ApplyForm({
         )}
       </CardHeader>
       <CardContent>
-        <form
-          id={formId}
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-          noValidate
-        >
+        <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" noValidate>
           <fieldset className="space-y-4" aria-labelledby={contactSectionId}>
             <legend id={contactSectionId} className="sr-only">
               {t("p2p.apply.contactSection")}
@@ -663,7 +684,11 @@ function ApplyForm({
                 name="nrc"
                 control={form.control}
                 render={({ field }) => (
-                  <NrcInput id={`${formId}-nrc`} value={field.value ?? ""} onChange={field.onChange} />
+                  <NrcInput
+                    id={`${formId}-nrc`}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                  />
                 )}
               />
             </Field>
@@ -959,10 +984,13 @@ function Field({
         </p>
       )}
       {isValidElement(children)
-        ? cloneElement(children as React.ReactElement<{ id?: string; "aria-describedby"?: string }>, {
-            id,
-            "aria-describedby": describedBy,
-          })
+        ? cloneElement(
+            children as React.ReactElement<{ id?: string; "aria-describedby"?: string }>,
+            {
+              id,
+              "aria-describedby": describedBy,
+            },
+          )
         : children}
       {error && (
         <p id={errorId} className="text-xs text-destructive" role="alert">

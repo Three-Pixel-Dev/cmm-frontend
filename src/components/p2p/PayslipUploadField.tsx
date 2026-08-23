@@ -107,7 +107,11 @@ export function PayslipUploadField({
               disabled={busy}
               className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
             >
-              {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("p2p.payslipReplace")}
+              {isUploading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                t("p2p.payslipReplace")
+              )}
             </button>
             <button
               type="button"

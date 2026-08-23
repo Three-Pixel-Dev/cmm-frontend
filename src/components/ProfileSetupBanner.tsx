@@ -24,7 +24,10 @@ export function ProfileSetupBanner() {
       className="border-b border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100"
     >
       <div className="mx-auto flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6 lg:px-8 xl:px-10">
-        <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+        <AlertTriangle
+          className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"
+          aria-hidden
+        />
         <p className="min-w-0 flex-1 text-sm">
           <span className="font-semibold">{t("settings.profileSetupTitle")}</span>{" "}
           <span className="text-amber-800/90 dark:text-amber-200/80">

@@ -1,5 +1,14 @@
-import type { ApiMarketGroup, ApiMarketItem, ApiMarketCategory, ApiPaged } from "@/types/market-api";
-import type { VolumeHistoryResponse, VolumeLedger, VolumeHistoryRange } from "@/lib/markets/volumeShare";
+import type {
+  ApiMarketGroup,
+  ApiMarketItem,
+  ApiMarketCategory,
+  ApiPaged,
+} from "@/types/market-api";
+import type {
+  VolumeHistoryResponse,
+  VolumeLedger,
+  VolumeHistoryRange,
+} from "@/lib/markets/volumeShare";
 import { http, unwrap, type ApiEnvelope } from "./http";
 
 export type MarketListParams = {
@@ -62,4 +71,3 @@ export const bannersApi = {
       .get<ApiEnvelope<ApiBanner[]>>("/banners", { params: { active: true } })
       .then((r) => unwrap(r.data)),
 };
-

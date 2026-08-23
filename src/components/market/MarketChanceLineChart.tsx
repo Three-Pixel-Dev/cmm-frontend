@@ -143,13 +143,7 @@ export function MarketChanceLineChart({
                     return null;
                   }
                   return (
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={compact ? 3 : 4}
-                      fill={stroke}
-                      strokeWidth={0}
-                    />
+                    <circle cx={cx} cy={cy} r={compact ? 3 : 4} fill={stroke} strokeWidth={0} />
                   );
                 }}
                 activeDot={{ r: compact ? 4 : 5, strokeWidth: 0 }}

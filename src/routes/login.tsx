@@ -194,7 +194,11 @@ function LoginPage() {
                   placeholder="Enter a username"
                 />
               </div>
-              <Button type="submit" className="w-full font-semibold" disabled={guestLoginM.isPending}>
+              <Button
+                type="submit"
+                className="w-full font-semibold"
+                disabled={guestLoginM.isPending}
+              >
                 {guestLoginM.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

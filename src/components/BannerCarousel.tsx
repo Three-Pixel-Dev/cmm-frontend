@@ -41,7 +41,15 @@ function OutcomeRow({ item, lang }: { item: MarketItemRow; lang: "en" | "my" }) 
   );
 }
 
-function BannerSlide({ group, enabled, showVolume }: { group: MarketGroupCard; enabled: boolean; showVolume: boolean }) {
+function BannerSlide({
+  group,
+  enabled,
+  showVolume,
+}: {
+  group: MarketGroupCard;
+  enabled: boolean;
+  showVolume: boolean;
+}) {
   const navigate = useNavigate();
   const { i18n, t } = useTranslation();
   const lang = i18n.language as "en" | "my";
@@ -83,9 +91,7 @@ function BannerSlide({ group, enabled, showVolume }: { group: MarketGroupCard; e
             <Sparkles className="h-3 w-3" aria-hidden />
             {t("market.featured", "Featured")}
           </span>
-          {showVolume && (
-            <span className="tabular-nums">{fmtCompact(group.totalVolume)} Vol.</span>
-          )}
+          {showVolume && <span className="tabular-nums">{fmtCompact(group.totalVolume)} Vol.</span>}
         </div>
 
         <h2 className="text-xl font-bold leading-tight sm:text-2xl line-clamp-2">

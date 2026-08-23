@@ -126,7 +126,10 @@ export function WalletWithdrawDialog({ open, onClose }: { open: boolean; onClose
           </ol>
 
           {error && (
-            <div role="alert" className="mb-3 flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            <div
+              role="alert"
+              className="mb-3 flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+            >
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
               <span>{error}</span>
             </div>
@@ -135,7 +138,8 @@ export function WalletWithdrawDialog({ open, onClose }: { open: boolean; onClose
           {step === "amount" && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                {t("wallet.funding.availableBalance")}: <span className="font-semibold text-foreground">{fmtKyat(balance)}</span>
+                {t("wallet.funding.availableBalance")}:{" "}
+                <span className="font-semibold text-foreground">{fmtKyat(balance)}</span>
               </p>
               <div className="space-y-1.5">
                 <Label htmlFor="withdraw-amount">{t("wallet.funding.amountLabel")}</Label>
@@ -149,11 +153,16 @@ export function WalletWithdrawDialog({ open, onClose }: { open: boolean; onClose
                   onChange={(e) => setAmount(e.target.value)}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{t("wallet.funding.withdrawHoldHint")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("wallet.funding.withdrawHoldHint")}
+              </p>
               <Button
                 className="w-full"
                 disabled={amt < 1 || amt > balance}
-                onClick={() => { setError(null); setStep("method"); }}
+                onClick={() => {
+                  setError(null);
+                  setStep("method");
+                }}
               >
                 {t("wallet.funding.continue")} <ChevronRight className="h-4 w-4" />
               </Button>
@@ -163,11 +172,17 @@ export function WalletWithdrawDialog({ open, onClose }: { open: boolean; onClose
           {step === "method" && (
             <div className="space-y-4">
               {methodsQ.isLoading ? (
-                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
               ) : methods.length === 0 ? (
                 <div className="space-y-3 text-center">
-                  <p className="text-sm text-muted-foreground">{t("wallet.funding.noPayoutMethods")}</p>
-                  <Button variant="outline" onClick={() => setAddPaymentOpen(true)}>{t("wallet.funding.addPayoutMethod")}</Button>
+                  <p className="text-sm text-muted-foreground">
+                    {t("wallet.funding.noPayoutMethods")}
+                  </p>
+                  <Button variant="outline" onClick={() => setAddPaymentOpen(true)}>
+                    {t("wallet.funding.addPayoutMethod")}
+                  </Button>
                 </div>
               ) : (
                 <>
@@ -177,12 +192,26 @@ export function WalletWithdrawDialog({ open, onClose }: { open: boolean; onClose
                     onSelect={setSelectedMethodId}
                     helpText={t("wallet.funding.payoutMethod")}
                   />
-                  {selected && <PaymentMethodDetailPanel method={selected} hint={t("wallet.funding.payoutDetail")} />}
+                  {selected && (
+                    <PaymentMethodDetailPanel
+                      method={selected}
+                      hint={t("wallet.funding.payoutDetail")}
+                    />
+                  )}
                 </>
               )}
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep("amount")}>{t("wallet.funding.back")}</Button>
-                <Button className="flex-1" disabled={!selectedMethodId} onClick={() => { setError(null); setStep("confirm"); }}>
+                <Button variant="outline" onClick={() => setStep("amount")}>
+                  {t("wallet.funding.back")}
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={!selectedMethodId}
+                  onClick={() => {
+                    setError(null);
+                    setStep("confirm");
+                  }}
+                >
                   {t("wallet.funding.continue")}
                 </Button>
               </div>
@@ -192,14 +221,35 @@ export function WalletWithdrawDialog({ open, onClose }: { open: boolean; onClose
           {step === "confirm" && (
             <div className="space-y-4">
               <dl className="space-y-2 rounded-xl border p-4 text-sm">
-                <div className="flex justify-between"><dt className="text-muted-foreground">{t("wallet.funding.amountLabel")}</dt><dd className="font-semibold">{fmtKyat(amt)}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">{t("wallet.funding.payoutMethod")}</dt><dd>{selected?.name || selected?.type.name}</dd></div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{t("wallet.funding.amountLabel")}</dt>
+                  <dd className="font-semibold">{fmtKyat(amt)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{t("wallet.funding.payoutMethod")}</dt>
+                  <dd>{selected?.name || selected?.type.name}</dd>
+                </div>
               </dl>
-              <p className="text-xs text-muted-foreground">{t("wallet.funding.withdrawConfirmHint")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("wallet.funding.withdrawConfirmHint")}
+              </p>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep("method")}>{t("wallet.funding.back")}</Button>
-                <Button className="flex-1" disabled={submitM.isPending} onClick={() => { setError(null); submitM.mutate(); }}>
-                  {submitM.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t("wallet.funding.submitWithdraw")}
+                <Button variant="outline" onClick={() => setStep("method")}>
+                  {t("wallet.funding.back")}
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={submitM.isPending}
+                  onClick={() => {
+                    setError(null);
+                    submitM.mutate();
+                  }}
+                >
+                  {submitM.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    t("wallet.funding.submitWithdraw")
+                  )}
                 </Button>
               </div>
             </div>
@@ -209,14 +259,20 @@ export function WalletWithdrawDialog({ open, onClose }: { open: boolean; onClose
             <div className="space-y-4 text-center">
               <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500" aria-hidden />
               <p className="font-medium">{t("wallet.funding.withdrawSubmitted")}</p>
-              <p className="text-sm text-muted-foreground">{t("wallet.funding.withdrawSubmittedHint")}</p>
-              <Button className="w-full" onClick={onClose}>{t("wallet.funding.close")}</Button>
+              <p className="text-sm text-muted-foreground">
+                {t("wallet.funding.withdrawSubmittedHint")}
+              </p>
+              <Button className="w-full" onClick={onClose}>
+                {t("wallet.funding.close")}
+              </Button>
             </div>
           )}
 
           <p className="text-center text-xs text-muted-foreground">
             {t("wallet.funding.p2pAlt")}{" "}
-            <Link to="/p2p" className="font-medium text-primary hover:underline">{t("wallet.funding.p2pLink")}</Link>
+            <Link to="/p2p" className="font-medium text-primary hover:underline">
+              {t("wallet.funding.p2pLink")}
+            </Link>
           </p>
         </DialogContent>
       </Dialog>

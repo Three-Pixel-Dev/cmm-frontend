@@ -47,14 +47,15 @@ export function BannerChanceChart({
   const { t, i18n } = useTranslation();
   const chartItems = useMemo(() => toChartItems(items), [items]);
 
-  const { chartData, chartLines, legendPct, totalVolume, isLoading, isError } = useMarketVolumeHistory({
-    marketId,
-    items: chartItems,
-    ledger: BANNER_LEDGER,
-    range: BANNER_RANGE,
-    lang,
-    enabled,
-  });
+  const { chartData, chartLines, legendPct, totalVolume, isLoading, isError } =
+    useMarketVolumeHistory({
+      marketId,
+      items: chartItems,
+      ledger: BANNER_LEDGER,
+      range: BANNER_RANGE,
+      lang,
+      enabled,
+    });
 
   const locale = i18n.language === "my" ? "my-MM" : "en-US";
   const hasChartData = chartData.length > 0;
@@ -63,7 +64,10 @@ export function BannerChanceChart({
   if (!enabled) {
     return (
       <div
-        className={cn("flex h-full min-h-[200px] items-center justify-center bg-elevated/50", className)}
+        className={cn(
+          "flex h-full min-h-[200px] items-center justify-center bg-elevated/50",
+          className,
+        )}
         aria-hidden
       />
     );
@@ -72,7 +76,10 @@ export function BannerChanceChart({
   if (isLoading && !hasChartData) {
     return (
       <div
-        className={cn("flex h-full min-h-[200px] items-center justify-center bg-elevated/50", className)}
+        className={cn(
+          "flex h-full min-h-[200px] items-center justify-center bg-elevated/50",
+          className,
+        )}
         role="status"
         aria-label={t("common.loading")}
       >

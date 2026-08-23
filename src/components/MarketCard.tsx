@@ -20,7 +20,14 @@ import { leadingOptionPercent, optionImpliedPercent } from "@/lib/markets/option
 
 const MAX_ROWS = 4;
 
-type ItemTerminalKind = "open" | "settled-yes" | "settled-no" | "settled-winner" | "cancelled" | "voided" | "expired";
+type ItemTerminalKind =
+  | "open"
+  | "settled-yes"
+  | "settled-no"
+  | "settled-winner"
+  | "cancelled"
+  | "voided"
+  | "expired";
 
 function getItemTerminalKind(item: MarketItemRow): ItemTerminalKind {
   if (item.status === "settled") {

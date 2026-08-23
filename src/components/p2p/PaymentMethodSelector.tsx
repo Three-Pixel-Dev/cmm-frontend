@@ -60,12 +60,7 @@ export function PaymentMethodSelector({
           ))}
         </div>
       </fieldset>
-      {selected && (
-        <PaymentMethodDetailPanel
-          method={selected}
-          hint={detailHint}
-        />
-      )}
+      {selected && <PaymentMethodDetailPanel method={selected} hint={detailHint} />}
     </div>
   );
 }
@@ -106,11 +101,7 @@ function PaymentMethodOptionCard({
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           {method.type.photo_url ? (
-            <img
-              src={method.type.photo_url}
-              alt=""
-              className="h-5 w-5 rounded-sm object-cover"
-            />
+            <img src={method.type.photo_url} alt="" className="h-5 w-5 rounded-sm object-cover" />
           ) : null}
           <span className="text-sm font-semibold">{title}</span>
           <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">

@@ -12,8 +12,7 @@ type ChatUIState = {
 export const useChatUI = create<ChatUIState>((set) => ({
   open: false,
   selectedId: null,
-  openPanel: (id) =>
-    set((s) => ({ open: true, selectedId: id !== undefined ? id : s.selectedId })),
+  openPanel: (id) => set((s) => ({ open: true, selectedId: id !== undefined ? id : s.selectedId })),
   selectConversation: (id) => set({ selectedId: id }),
   closePanel: () => set({ open: false }),
 }));

@@ -1,10 +1,6 @@
 import { useEffect, useCallback, useRef, ReactNode } from "react";
 import { gatewayWebSocketUrl, parseWsMessage } from "@/lib/api/ws";
-import {
-  createContext,
-  useContext,
-  useState,
-} from "react";
+import { createContext, useContext, useState } from "react";
 
 type WsCallback = (payload: unknown) => void;
 
@@ -42,27 +38,30 @@ export function WebsocketContextProvider({ children }: { children: ReactNode }) 
     }
   }, [sendSubscribe]);
 
-  const subscribe = useCallback((channel: string, callback: WsCallback): (() => void) => {
-    let set = listenersRef.current.get(channel);
-    if (!set) {
-      set = new Set();
-      listenersRef.current.set(channel, set);
-      sendSubscribe(channel);
-    }
-    set.add(callback);
-
-    return () => {
-      const currentSet = listenersRef.current.get(channel);
-      if (!currentSet) return;
-      currentSet.delete(callback);
-      if (currentSet.size === 0) {
-        listenersRef.current.delete(channel);
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({ type: "unsubscribe", channel }));
-        }
+  const subscribe = useCallback(
+    (channel: string, callback: WsCallback): (() => void) => {
+      let set = listenersRef.current.get(channel);
+      if (!set) {
+        set = new Set();
+        listenersRef.current.set(channel, set);
+        sendSubscribe(channel);
       }
-    };
-  }, [sendSubscribe]);
+      set.add(callback);
+
+      return () => {
+        const currentSet = listenersRef.current.get(channel);
+        if (!currentSet) return;
+        currentSet.delete(callback);
+        if (currentSet.size === 0) {
+          listenersRef.current.delete(channel);
+          if (wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({ type: "unsubscribe", channel }));
+          }
+        }
+      };
+    },
+    [sendSubscribe],
+  );
 
   useEffect(() => {
     unmountedRef.current = false;

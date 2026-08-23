@@ -78,17 +78,17 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
           {steps.slice(0, -1).map((s, i) => (
             <li
               key={s}
-              className={cn(
-                "h-1 flex-1 rounded-full",
-                i <= stepIndex ? "bg-primary" : "bg-muted",
-              )}
+              className={cn("h-1 flex-1 rounded-full", i <= stepIndex ? "bg-primary" : "bg-muted")}
               aria-current={step === s ? "step" : undefined}
             />
           ))}
         </ol>
 
         {error && (
-          <div role="alert" className="mb-3 flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            role="alert"
+            className="mb-3 flex gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          >
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
             <span>{error}</span>
           </div>
@@ -109,7 +109,14 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
               />
             </div>
             <p className="text-xs text-muted-foreground">{t("wallet.funding.depositHint")}</p>
-            <Button className="w-full" disabled={amt < 1} onClick={() => { setError(null); setStep("method"); }}>
+            <Button
+              className="w-full"
+              disabled={amt < 1}
+              onClick={() => {
+                setError(null);
+                setStep("method");
+              }}
+            >
               {t("wallet.funding.continue")} <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -118,15 +125,23 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
         {step === "method" && (
           <div className="space-y-4">
             {methodsQ.isLoading ? (
-              <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
             ) : methodsQ.isError ? (
               <p className="text-sm text-destructive" role="alert">
                 {(methodsQ.error as Error).message || t("wallet.funding.loadDepositMethodsError")}
               </p>
             ) : methods.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("wallet.funding.noDepositMethods")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("wallet.funding.noDepositMethods")}
+              </p>
             ) : (
-              <ul className="space-y-2" role="listbox" aria-label={t("wallet.funding.selectDepositMethod")}>
+              <ul
+                className="space-y-2"
+                role="listbox"
+                aria-label={t("wallet.funding.selectDepositMethod")}
+              >
                 {methods.map((m) => (
                   <li key={m.id}>
                     <button
@@ -136,12 +151,18 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
                       onClick={() => setSelectedMethodId(m.id)}
                       className={cn(
                         "w-full rounded-xl border p-3 text-left transition-colors",
-                        selectedMethodId === m.id ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40",
+                        selectedMethodId === m.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:bg-muted/40",
                       )}
                     >
                       <div className="flex items-center gap-2">
                         {m.type.photo_url && (
-                          <img src={m.type.photo_url} alt="" className="h-5 w-5 rounded-sm object-cover" />
+                          <img
+                            src={m.type.photo_url}
+                            alt=""
+                            className="h-5 w-5 rounded-sm object-cover"
+                          />
                         )}
                         <p className="font-medium">{m.name || m.type.name}</p>
                         {m.is_default && (
@@ -157,8 +178,17 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
               </ul>
             )}
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep("amount")}>{t("wallet.funding.back")}</Button>
-              <Button className="flex-1" disabled={!selectedMethodId} onClick={() => { setError(null); setStep("proof"); }}>
+              <Button variant="outline" onClick={() => setStep("amount")}>
+                {t("wallet.funding.back")}
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={!selectedMethodId}
+                onClick={() => {
+                  setError(null);
+                  setStep("proof");
+                }}
+              >
                 {t("wallet.funding.continue")}
               </Button>
             </div>
@@ -169,8 +199,17 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
           <div className="space-y-4">
             <PayslipUploadField value={slipUrl} onChange={setSlipUrl} />
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep("method")}>{t("wallet.funding.back")}</Button>
-              <Button className="flex-1" disabled={!slipUrl} onClick={() => { setError(null); setStep("confirm"); }}>
+              <Button variant="outline" onClick={() => setStep("method")}>
+                {t("wallet.funding.back")}
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={!slipUrl}
+                onClick={() => {
+                  setError(null);
+                  setStep("confirm");
+                }}
+              >
                 {t("wallet.funding.continue")}
               </Button>
             </div>
@@ -180,13 +219,32 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
         {step === "confirm" && (
           <div className="space-y-4">
             <dl className="space-y-2 rounded-xl border p-4 text-sm">
-              <div className="flex justify-between"><dt className="text-muted-foreground">{t("wallet.funding.amountLabel")}</dt><dd className="font-semibold">{fmtKyat(amt)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">{t("wallet.funding.receiveMethod")}</dt><dd>{selected?.name || selected?.type.name}</dd></div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">{t("wallet.funding.amountLabel")}</dt>
+                <dd className="font-semibold">{fmtKyat(amt)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">{t("wallet.funding.receiveMethod")}</dt>
+                <dd>{selected?.name || selected?.type.name}</dd>
+              </div>
             </dl>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep("proof")}>{t("wallet.funding.back")}</Button>
-              <Button className="flex-1" disabled={submitM.isPending} onClick={() => { setError(null); submitM.mutate(); }}>
-                {submitM.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t("wallet.funding.submitDeposit")}
+              <Button variant="outline" onClick={() => setStep("proof")}>
+                {t("wallet.funding.back")}
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={submitM.isPending}
+                onClick={() => {
+                  setError(null);
+                  submitM.mutate();
+                }}
+              >
+                {submitM.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  t("wallet.funding.submitDeposit")
+                )}
               </Button>
             </div>
           </div>
@@ -196,14 +254,20 @@ export function WalletDepositDialog({ open, onClose }: { open: boolean; onClose:
           <div className="space-y-4 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500" aria-hidden />
             <p className="font-medium">{t("wallet.funding.depositSubmitted")}</p>
-            <p className="text-sm text-muted-foreground">{t("wallet.funding.depositSubmittedHint")}</p>
-            <Button className="w-full" onClick={onClose}>{t("wallet.funding.close")}</Button>
+            <p className="text-sm text-muted-foreground">
+              {t("wallet.funding.depositSubmittedHint")}
+            </p>
+            <Button className="w-full" onClick={onClose}>
+              {t("wallet.funding.close")}
+            </Button>
           </div>
         )}
 
         <p className="text-center text-xs text-muted-foreground">
           {t("wallet.funding.p2pAlt")}{" "}
-          <Link to="/p2p" className="font-medium text-primary hover:underline">{t("wallet.funding.p2pLink")}</Link>
+          <Link to="/p2p" className="font-medium text-primary hover:underline">
+            {t("wallet.funding.p2pLink")}
+          </Link>
         </p>
       </DialogContent>
     </Dialog>

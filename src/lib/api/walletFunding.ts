@@ -13,9 +13,7 @@ export const walletFundingApi = {
   /** Super-admin payment methods customers send wallet deposits to. */
   listDepositMethods: () =>
     http
-      .get<ApiEnvelope<ApiPaymentMethod[]>>(
-        "/wallet-funding-requests/platform-methods",
-      )
+      .get<ApiEnvelope<ApiPaymentMethod[]>>("/wallet-funding-requests/platform-methods")
       .then((r) => unwrap(r.data)),
 
   create: (body: CreateWalletFundingPayload) =>

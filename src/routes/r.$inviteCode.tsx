@@ -184,7 +184,7 @@ function AddChipsDialog({ roomId, userId }: { roomId: string; userId: string }) 
         onError: (err) => {
           toast.error(err.message);
         },
-      }
+      },
     );
   };
 
@@ -200,9 +200,7 @@ function AddChipsDialog({ roomId, userId }: { roomId: string; userId: string }) 
         <form onSubmit={onSubmit}>
           <DialogHeader>
             <DialogTitle>Add Play Chips</DialogTitle>
-            <DialogDescription>
-              Grant virtual chips to this player.
-            </DialogDescription>
+            <DialogDescription>Grant virtual chips to this player.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

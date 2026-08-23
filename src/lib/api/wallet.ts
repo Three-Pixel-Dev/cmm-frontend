@@ -5,6 +5,5 @@ import { http, unwrap, type ApiEnvelope } from "./http";
 export const WALLET_QUERY_KEY = "wallet";
 
 export const walletApi = {
-  getMine: () =>
-    http.get<ApiEnvelope<ApiWallet>>("/wallets/me").then((r) => unwrap(r.data)),
+  getMine: () => http.get<ApiEnvelope<ApiWallet>>("/wallets/me").then((r) => unwrap(r.data)),
 };

@@ -2,12 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PlusCircle, MinusCircle } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePortfolio } from "@/store/usePortfolio";
@@ -19,13 +14,7 @@ const WITHDRAW_PRESETS = [500, 1000, 5000, 10000];
 
 type Mode = "deposit" | "withdraw";
 
-export function FundsModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function FundsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>("deposit");
   const [amount, setAmount] = useState("");
@@ -72,17 +61,22 @@ export function FundsModal({
           {(["deposit", "withdraw"] as Mode[]).map((m) => (
             <button
               key={m}
-              onClick={() => { setMode(m); setAmount(""); }}
+              onClick={() => {
+                setMode(m);
+                setAmount("");
+              }}
               className={cn(
                 "flex items-center justify-center gap-1.5 rounded-md py-2 text-sm font-semibold transition-all",
                 mode === m
                   ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {m === "deposit"
-                ? <PlusCircle className="h-4 w-4" />
-                : <MinusCircle className="h-4 w-4" />}
+              {m === "deposit" ? (
+                <PlusCircle className="h-4 w-4" />
+              ) : (
+                <MinusCircle className="h-4 w-4" />
+              )}
               {t(`portfolio.${m}`)}
             </button>
           ))}
@@ -90,7 +84,9 @@ export function FundsModal({
 
         {/* Balance display */}
         <div className="rounded-lg bg-elevated/60 px-4 py-3 text-center">
-          <div className="text-xs text-muted-foreground uppercase tracking-wide">{t("portfolio.balance")}</div>
+          <div className="text-xs text-muted-foreground uppercase tracking-wide">
+            {t("portfolio.balance")}
+          </div>
           <div className="mt-0.5 text-xl font-bold tabular-nums">{fmtKyat(balance)}</div>
         </div>
 
@@ -98,7 +94,9 @@ export function FundsModal({
         <div>
           <label className="text-xs text-muted-foreground">{t("market.amount")}</label>
           <div className="relative mt-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">K</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+              K
+            </span>
             <Input
               type="number"
               inputMode="decimal"
@@ -128,7 +126,7 @@ export function FundsModal({
             "w-full h-11 font-semibold",
             mode === "deposit"
               ? "bg-yes text-yes-foreground hover:bg-yes/90"
-              : "bg-no text-no-foreground hover:bg-no/90"
+              : "bg-no text-no-foreground hover:bg-no/90",
           )}
         >
           {mode === "deposit" ? t("portfolio.deposit") : t("portfolio.withdraw")}

@@ -37,13 +37,13 @@ function metaContent(
   head: ReturnType<typeof buildMarketShareMeta>,
   key: "og:title" | "twitter:title" | "og:image:alt",
 ): string | undefined {
-  const entry = head.meta.find(
-    (m) => "property" in m && m.property === key,
-  ) as { property: string; content: string } | undefined;
+  const entry = head.meta.find((m) => "property" in m && m.property === key) as
+    | { property: string; content: string }
+    | undefined;
   if (entry) return entry.content;
-  const nameEntry = head.meta.find(
-    (m) => "name" in m && m.name === key,
-  ) as { name: string; content: string } | undefined;
+  const nameEntry = head.meta.find((m) => "name" in m && m.name === key) as
+    | { name: string; content: string }
+    | undefined;
   return nameEntry?.content;
 }
 

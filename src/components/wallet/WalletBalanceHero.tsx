@@ -108,9 +108,7 @@ function BalanceCard({
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {label}
           </p>
-          <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">
-            {value}
-          </p>
+          <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">{value}</p>
           <p className="mt-2 text-xs text-muted-foreground">{hint}</p>
           {actions}
         </div>

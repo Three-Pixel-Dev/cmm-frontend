@@ -102,7 +102,9 @@ export function AffiliateEarningsSection({
           <p className="text-sm">{t("wallet.affiliateLoading")}</p>
         </div>
       ) : earningsQ.isError ? (
-        <p className="py-8 text-center text-sm text-destructive">{t("wallet.affiliateLoadError")}</p>
+        <p className="py-8 text-center text-sm text-destructive">
+          {t("wallet.affiliateLoadError")}
+        </p>
       ) : filtered.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
           {search.trim() ? t("wallet.affiliateNoResults") : t("wallet.affiliateEmpty")}
@@ -134,56 +136,58 @@ export function AffiliateEarningsSection({
                   <span className="font-mono text-base font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
                     {formatEarning(row.payout_amount, row.ledger)}
                   </span>
-                  <span className="text-xs text-muted-foreground">{fmtDate(row.created_at, locale)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {fmtDate(row.created_at, locale)}
+                  </span>
                 </div>
               </li>
             ))}
           </ul>
           <ScrollArea className={cn(SCROLL_TABLE_CLASS, "hidden md:block")}>
-          <Table>
-            <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
-              <TableRow>
-                <TableHead>{t("wallet.affiliateColMarket")}</TableHead>
-                <TableHead>{t("wallet.affiliateColItem")}</TableHead>
-                <TableHead>{t("wallet.affiliateColBetSide")}</TableHead>
-                <TableHead className="text-right">{t("wallet.affiliateColEarning")}</TableHead>
-                <TableHead>{t("wallet.affiliateColLedger")}</TableHead>
-                <TableHead className="text-right">{t("wallet.colDate")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell className="max-w-[160px] truncate font-medium">
-                    {row.market_title_en || "—"}
-                  </TableCell>
-                  <TableCell className="max-w-[160px] truncate">
-                    {row.market_item_title_en || "—"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={row.bet_side === "yes" ? "default" : "destructive"}
-                      className="capitalize"
-                    >
-                      {row.bet_side}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-mono font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
-                    {formatEarning(row.payout_amount, row.ledger)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {row.ledger}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right text-muted-foreground">
-                    {fmtDate(row.created_at, locale)}
-                  </TableCell>
+            <Table>
+              <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
+                <TableRow>
+                  <TableHead>{t("wallet.affiliateColMarket")}</TableHead>
+                  <TableHead>{t("wallet.affiliateColItem")}</TableHead>
+                  <TableHead>{t("wallet.affiliateColBetSide")}</TableHead>
+                  <TableHead className="text-right">{t("wallet.affiliateColEarning")}</TableHead>
+                  <TableHead>{t("wallet.affiliateColLedger")}</TableHead>
+                  <TableHead className="text-right">{t("wallet.colDate")}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="max-w-[160px] truncate font-medium">
+                      {row.market_title_en || "—"}
+                    </TableCell>
+                    <TableCell className="max-w-[160px] truncate">
+                      {row.market_item_title_en || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={row.bet_side === "yes" ? "default" : "destructive"}
+                        className="capitalize"
+                      >
+                        {row.bet_side}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                      {formatEarning(row.payout_amount, row.ledger)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {row.ledger}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground">
+                      {fmtDate(row.created_at, locale)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </>
       )}
     </>

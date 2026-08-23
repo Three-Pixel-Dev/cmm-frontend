@@ -4,10 +4,7 @@ import { toast } from "sonner";
 import { useWebsocketSubscription } from "@/components/WebsocketProvider";
 import { useAuth } from "@/store/useAuth";
 import { useChatUI } from "@/store/useChatUI";
-import {
-  CHAT_CONVERSATIONS_KEY,
-  upsertMessage,
-} from "@/hooks/useChat";
+import { CHAT_CONVERSATIONS_KEY, upsertMessage } from "@/hooks/useChat";
 import type { ChatMessageEvent } from "@/lib/chat/types";
 
 function parseChatEvent(payload: unknown): ChatMessageEvent | null {

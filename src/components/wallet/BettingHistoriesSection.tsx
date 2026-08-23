@@ -1,6 +1,9 @@
 import { betsApi } from "@/lib/api/bets";
 import { marketItemsApi } from "@/lib/api/markets";
-import { potentialProfitForBet, bettingHistoryAnswerLabel } from "@/lib/markets/bettingHistoryProfit";
+import {
+  potentialProfitForBet,
+  bettingHistoryAnswerLabel,
+} from "@/lib/markets/bettingHistoryProfit";
 import type { ApiMarketItem } from "@/types/market-api";
 import type { ApiBettingHistory } from "@/types/bet-api";
 import { useQueries, useQuery } from "@tanstack/react-query";
@@ -91,12 +94,11 @@ function ProfitCell({
 
   return (
     <span
-      className={cn(
-        "font-mono font-medium tabular-nums",
-        profit >= 0 ? "text-yes" : "text-no",
-      )}
+      className={cn("font-mono font-medium tabular-nums", profit >= 0 ? "text-yes" : "text-no")}
     >
-      {profit !== 0 ? `~${fmtLedger(profit, ledger, { digits: 2 })}` : fmtLedger(0, ledger, { digits: 2 })}
+      {profit !== 0
+        ? `~${fmtLedger(profit, ledger, { digits: 2 })}`
+        : fmtLedger(0, ledger, { digits: 2 })}
     </span>
   );
 }

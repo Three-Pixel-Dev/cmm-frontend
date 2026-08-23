@@ -2,10 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { MarketCard } from "@/components/MarketCard";
-import {
-  MARKET_GROUP_DETAIL_KEY,
-  useMarketGroupDetail,
-} from "@/hooks/useMarketGroupDetail";
+import { MARKET_GROUP_DETAIL_KEY, useMarketGroupDetail } from "@/hooks/useMarketGroupDetail";
 import { useMarketLiveChannel } from "@/hooks/useMarketPoolRealtime";
 import { useQuery } from "@tanstack/react-query";
 import { marketsApi } from "@/lib/api/markets";
@@ -68,7 +65,12 @@ function MarketPage() {
   const { side, optionId, itemId, ref } = Route.useSearch();
   const { detail: loaderDetail } = Route.useLoaderData();
   const { t } = useTranslation();
-  const { data: detail, isLoading, isError, error } = useMarketGroupDetail(marketId, {
+  const {
+    data: detail,
+    isLoading,
+    isError,
+    error,
+  } = useMarketGroupDetail(marketId, {
     refetchInterval: 1_500,
   });
 
@@ -81,7 +83,9 @@ function MarketPage() {
         category_id: resolvedDetail!.categoryId,
         limit: 5,
       });
-      return mapApiGroupsToCards(page.items).filter((g) => g.id !== marketId).slice(0, 4);
+      return mapApiGroupsToCards(page.items)
+        .filter((g) => g.id !== marketId)
+        .slice(0, 4);
     },
     enabled: !!resolvedDetail?.categoryId,
     staleTime: 30_000,

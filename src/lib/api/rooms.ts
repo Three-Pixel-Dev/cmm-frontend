@@ -67,6 +67,17 @@ export type CreateRoomMarketPayload = {
   options?: string[];
 };
 
+export type RoomMessage = {
+  id: string;
+  room_id: string;
+  user_id: string;
+  user_name: string;
+  user_avatar?: string;
+  user_role: RoomMemberRole | "admin" | "player";
+  message: string;
+  created_at: string;
+};
+
 export const roomsApi = {
   preview: (inviteCode: string) =>
     http
@@ -108,6 +119,18 @@ export const roomsApi = {
 
   addVirtualChips: (roomId: string, userId: string, amount: number) =>
     http
-      .post<ApiEnvelope<{ success: boolean }>>(`/rooms/${roomId}/members/${userId}/add-chips`, { amount })
+      .post<
+        ApiEnvelope<{ success: boolean }>
+      >(`/rooms/${roomId}/members/${userId}/add-chips`, { amount })
+      .then((r) => unwrap(r.data)),
+
+  messages: (id: string, limit = 100) =>
+    http
+      .get<ApiEnvelope<RoomMessage[]>>(`/rooms/${id}/messages?limit=${limit}`)
+      .then((r) => unwrap(r.data)),
+
+  sendMessage: (id: string, message: string) =>
+    http
+      .post<ApiEnvelope<RoomMessage>>(`/rooms/${id}/messages`, { message })
       .then((r) => unwrap(r.data)),
 };

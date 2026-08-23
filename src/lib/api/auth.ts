@@ -25,22 +25,30 @@ export const authApi = {
       .then((r) => unwrap(r.data)),
 
   logout: () =>
-    http.post<ApiEnvelope<unknown>>("/auth/logout", {}, { _skipAuthRefresh: true }).then(() => undefined),
+    http
+      .post<ApiEnvelope<unknown>>("/auth/logout", {}, { _skipAuthRefresh: true })
+      .then(() => undefined),
 
   me: () => http.get<ApiEnvelope<ApiUser>>("/users/me").then((r) => unwrap(r.data)),
 
   registerRequest: (payload: RegisterRequestPayload) =>
     http
-      .post<ApiEnvelope<OTPSentResult>>("/auth/register/request", payload, { _skipAuthRefresh: true })
+      .post<
+        ApiEnvelope<OTPSentResult>
+      >("/auth/register/request", payload, { _skipAuthRefresh: true })
       .then((r) => unwrap(r.data)),
 
   registerVerify: (email: string, otp: string) =>
     http
-      .post<ApiEnvelope<AuthResult>>("/auth/register/verify", { email, otp }, { _skipAuthRefresh: true })
+      .post<
+        ApiEnvelope<AuthResult>
+      >("/auth/register/verify", { email, otp }, { _skipAuthRefresh: true })
       .then((r) => unwrap(r.data)),
 
   registerResend: (email: string) =>
     http
-      .post<ApiEnvelope<OTPSentResult>>("/auth/register/resend", { email }, { _skipAuthRefresh: true })
+      .post<
+        ApiEnvelope<OTPSentResult>
+      >("/auth/register/resend", { email }, { _skipAuthRefresh: true })
       .then((r) => unwrap(r.data)),
 };

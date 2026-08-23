@@ -353,7 +353,8 @@ const en = {
       withdrawTitle: "Withdraw from wallet",
       stepsLabel: "Deposit and withdrawal steps",
       amountLabel: "Amount (MMK)",
-      depositHint: "Transfer to the admin payment method shown next, then upload your payment slip.",
+      depositHint:
+        "Transfer to the admin payment method shown next, then upload your payment slip.",
       withdrawHoldHint: "Your balance will be held until an admin approves the payout.",
       withdrawConfirmHint: "Admin will send funds to your selected payout method after approval.",
       continue: "Continue",
@@ -365,7 +366,8 @@ const en = {
       depositSubmittedHint: "An admin will review your slip and credit your wallet once approved.",
       withdrawSubmitted: "Withdrawal request submitted",
       withdrawSubmittedHint: "Your balance is on hold until the payout is approved.",
-      noDepositMethods: "No deposit payment methods are available yet. Please try again later or use P2P agents.",
+      noDepositMethods:
+        "No deposit payment methods are available yet. Please try again later or use P2P agents.",
       loadDepositMethodsError: "Could not load deposit payment methods. Please try again.",
       selectDepositMethod: "Select payment method",
       receiveMethod: "Payment method",
@@ -1090,7 +1092,8 @@ const my = {
       depositSubmittedHint: "Admin က slip စစ်ပြီး အတည်ပြုပြီးနောက် လက်ကျန် ထည့်ပေးမည်။",
       withdrawSubmitted: "ငွေထုတ် တောင်းဆိုမှု တင်ပြီး",
       withdrawSubmittedHint: "Admin အတည်ပြုချိန်အထိ လက်ကျန် hold လုပ်ထားမည်။",
-      noDepositMethods: "ငွေသွင်း payment method များ မရှိသေးပါ။ နောက်မှ ထပ်စမ်းပါ သို့မဟုတ် P2P agent ကို အသုံးပြုပါ။",
+      noDepositMethods:
+        "ငွေသွင်း payment method များ မရှိသေးပါ။ နောက်မှ ထပ်စမ်းပါ သို့မဟုတ် P2P agent ကို အသုံးပြုပါ။",
       loadDepositMethodsError: "ငွေသွင်း payment method များ မဖတ်နိုင်ပါ။ ထပ်စမ်းပါ။",
       selectDepositMethod: "Payment method ရွေးပါ",
       receiveMethod: "Payment method",

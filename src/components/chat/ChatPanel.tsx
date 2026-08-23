@@ -6,12 +6,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/useAuth";
 import { useChatUI } from "@/store/useChatUI";
-import {
-  useConversations,
-  useMarkRead,
-  useMessages,
-  useSendMessage,
-} from "@/hooks/useChat";
+import { useConversations, useMarkRead, useMessages, useSendMessage } from "@/hooks/useChat";
 import type { ChatConversation, ChatMessage } from "@/lib/chat/types";
 
 function initials(name?: string) {
@@ -50,10 +45,7 @@ export function ChatPanel() {
         aria-label="Chat"
       >
         {selectedId && selected ? (
-          <ThreadView
-            conversation={selected}
-            onBack={() => selectConversation(null)}
-          />
+          <ThreadView conversation={selected} onBack={() => selectConversation(null)} />
         ) : (
           <ListView
             conversations={conversations}

@@ -43,7 +43,9 @@ export function MarketOptionPicker({
         const pct = Math.round(optionImpliedPercent(option, options, legacyPool));
         const selected = option.id === selectedId;
         const color =
-          binaryStyle && index < 2 ? OPTION_COLORS[index] : OPTION_COLORS[index % OPTION_COLORS.length];
+          binaryStyle && index < 2
+            ? OPTION_COLORS[index]
+            : OPTION_COLORS[index % OPTION_COLORS.length];
 
         return (
           <button
@@ -52,7 +54,9 @@ export function MarketOptionPicker({
             onClick={() => onSelect(option.id)}
             className={cn(
               "rounded-lg border py-3 px-2 text-center font-semibold transition-all min-w-0",
-              selected ? color : "border-border bg-elevated text-muted-foreground hover:text-foreground",
+              selected
+                ? color
+                : "border-border bg-elevated text-muted-foreground hover:text-foreground",
             )}
           >
             <div className="text-xs uppercase opacity-80 line-clamp-2 leading-snug">

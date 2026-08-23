@@ -1,5 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { MARKET_GROUP_DETAIL_KEY, type MarketDetails, type MarketItem } from "@/hooks/useMarketGroupDetail";
+import {
+  MARKET_GROUP_DETAIL_KEY,
+  type MarketDetails,
+  type MarketItem,
+} from "@/hooks/useMarketGroupDetail";
 import { MARKETS_CATALOG_KEY } from "@/hooks/useMarkets";
 import type { ApiMarketItemOption, ApiMarketPool } from "@/types/market-api";
 import type { MarketGroupCard, MarketGroupDetail, MarketItemDetail } from "@/lib/markets/types";
@@ -188,19 +192,14 @@ function patchItemOptions(
   if (!options?.length || !item.options?.length) return item;
 
   const poolById = new Map(
-    options.map((o) => [
-      o.id,
-      ledger === "real" ? o.real_pool : o.virtual_pool,
-    ]),
+    options.map((o) => [o.id, ledger === "real" ? o.real_pool : o.virtual_pool]),
   );
 
   const nextOptions: ApiMarketItemOption[] = item.options.map((opt) => {
     const counts = poolById.get(opt.id);
     if (!counts) return opt;
     const pool = { seed_count: counts.seed_count, real_count: counts.real_count };
-    return ledger === "real"
-      ? { ...opt, real_pool: pool }
-      : { ...opt, virtual_pool: pool };
+    return ledger === "real" ? { ...opt, real_pool: pool } : { ...opt, virtual_pool: pool };
   });
 
   return { ...item, options: nextOptions };
@@ -219,9 +218,7 @@ function syncBinaryOptionsFromPool(
       seed_count: index === 0 ? pool.seed_yes_count : pool.seed_no_count,
       real_count: index === 0 ? pool.real_yes_count : pool.real_no_count,
     };
-    return ledger === "real"
-      ? { ...opt, real_pool: counts }
-      : { ...opt, virtual_pool: counts };
+    return ledger === "real" ? { ...opt, real_pool: counts } : { ...opt, virtual_pool: counts };
   });
 
   return { ...item, options: nextOptions };
@@ -349,19 +346,15 @@ export function applyMarketLiveSnapshotToCache(
     },
   );
 
-  queryClient.setQueriesData<MarketGroupCard[]>(
-    { queryKey: MARKETS_CATALOG_KEY },
-    (old) => (old ? applyLiveSnapshotToCatalog(old, snap) : old),
+  queryClient.setQueriesData<MarketGroupCard[]>({ queryKey: MARKETS_CATALOG_KEY }, (old) =>
+    old ? applyLiveSnapshotToCatalog(old, snap) : old,
   );
 
   return true;
 }
 
 /** Patch detail cache from virtual pool WS event (market.{id}.virtual-pool). */
-export function applyVirtualPoolUpdateToCache(
-  queryClient: QueryClient,
-  payload: unknown,
-): boolean {
+export function applyVirtualPoolUpdateToCache(queryClient: QueryClient, payload: unknown): boolean {
   const update = parseVirtualPoolUpdate(payload);
   if (!update) return false;
 

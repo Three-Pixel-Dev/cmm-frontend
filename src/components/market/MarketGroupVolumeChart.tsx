@@ -7,14 +7,18 @@ import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MarketChanceLineChart } from "./MarketChanceLineChart";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const HISTORY_RANGES = ["5MIN", "15MIN", "1H", "6H", "1D", "1W", "1M", "ALL"] as const satisfies VolumeRange[];
+const HISTORY_RANGES = [
+  "5MIN",
+  "15MIN",
+  "1H",
+  "6H",
+  "1D",
+  "1W",
+  "1M",
+  "ALL",
+] as const satisfies VolumeRange[];
 
 function itemTerminal(item: MarketItem): boolean {
   if (item.status === "settled" || item.status === "cancelled" || item.status === "voided") {
@@ -49,10 +53,7 @@ export function MarketGroupVolumeChart({
 }: Props) {
   const { t, i18n } = useTranslation();
   const [range, setRange] = useState<VolumeRange>(() => defaultVolumeRange(items));
-  const liveDisabled = useMemo(
-    () => items.length > 0 && items.every(itemTerminal),
-    [items],
-  );
+  const liveDisabled = useMemo(() => items.length > 0 && items.every(itemTerminal), [items]);
 
   useEffect(() => {
     setRange(defaultVolumeRange(items));
@@ -66,14 +67,15 @@ export function MarketGroupVolumeChart({
 
   const liveAppendKey = isLiveVolumeRange(range) ? forceLiveAppendKey : 0;
 
-  const { chartData, chartLines, legendPct, totalVolume, isLoading, isError } = useMarketVolumeHistory({
-    marketId,
-    items,
-    ledger,
-    range,
-    forceLiveAppendKey: liveAppendKey,
-    lang,
-  });
+  const { chartData, chartLines, legendPct, totalVolume, isLoading, isError } =
+    useMarketVolumeHistory({
+      marketId,
+      items,
+      ledger,
+      range,
+      forceLiveAppendKey: liveAppendKey,
+      lang,
+    });
 
   const lines = chartLines;
   const locale = i18n.language === "my" ? "my-MM" : "en-US";
@@ -140,7 +142,9 @@ export function MarketGroupVolumeChart({
         {isLoading && !hasChartData ? (
           <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : isError && !hasChartData ? (
-          <p className="py-16 text-center text-sm text-destructive">{t("market.volumeHistoryError")}</p>
+          <p className="py-16 text-center text-sm text-destructive">
+            {t("market.volumeHistoryError")}
+          </p>
         ) : !hasChartData && !hasPools ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("market.volumeHistoryEmpty")}

@@ -30,11 +30,7 @@ export function parseBirthDate(iso?: string | null): {
   return { day: String(Number(day)), month: String(Number(month)), year };
 }
 
-export function birthDateFromParts(
-  day: string,
-  month: string,
-  year: string,
-): string | undefined {
+export function birthDateFromParts(day: string, month: string, year: string): string | undefined {
   if (!day || !month || !year) return undefined;
   const d = Number(day);
   const m = Number(month);
@@ -50,11 +46,13 @@ export function birthDateFromParts(
 }
 
 export function isValidBirthDate(iso: string): boolean {
-  return birthDateFromParts(
-    parseBirthDate(iso).day,
-    parseBirthDate(iso).month,
-    parseBirthDate(iso).year,
-  ) === iso;
+  return (
+    birthDateFromParts(
+      parseBirthDate(iso).day,
+      parseBirthDate(iso).month,
+      parseBirthDate(iso).year,
+    ) === iso
+  );
 }
 
 export function birthYearOptions(minAge = 0, maxAge = 150): number[] {

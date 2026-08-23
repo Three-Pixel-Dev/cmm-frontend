@@ -17,11 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { fmtDate, fmtKyat } from "@/lib/format";
 import { transactionsApi, TRANSACTIONS_QUERY_KEY } from "@/lib/api/transactions";
-import type {
-  ApiTransaction,
-  TransactionStatus,
-  TransactionType,
-} from "@/lib/api/types";
+import type { ApiTransaction, TransactionStatus, TransactionType } from "@/lib/api/types";
 
 const STATUS_STYLES: Record<TransactionStatus, string> = {
   success: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
@@ -68,9 +64,7 @@ export function TransactionsSection({
     const q = search.trim().toLowerCase();
     if (!q) return items;
     return items.filter(
-      (tx) =>
-        tx.id.toLowerCase().includes(q) ||
-        (tx.source_id?.toLowerCase().includes(q) ?? false),
+      (tx) => tx.id.toLowerCase().includes(q) || (tx.source_id?.toLowerCase().includes(q) ?? false),
     );
   }, [items, search]);
 
@@ -156,7 +150,10 @@ export function TransactionsSection({
                 <TransactionMobileCard
                   key={tx.id}
                   tx={tx}
-                  typeLabel={resolveTransactionTypeLabel(tx, { ...typeLabels, withdrawHold: withdrawHoldLabel })}
+                  typeLabel={resolveTransactionTypeLabel(tx, {
+                    ...typeLabels,
+                    withdrawHold: withdrawHoldLabel,
+                  })}
                   statusLabel={statusLabels[tx.status]}
                   sourceLabel={resolveSourceLabel(tx, walletFundingSourceLabel)}
                   locale={locale}
@@ -167,35 +164,40 @@ export function TransactionsSection({
               ))}
             </ul>
             <ScrollArea className={cn(SCROLL_TABLE_CLASS, "hidden md:block")}>
-            <Table>
-              <caption className="sr-only">{t("wallet.transactions")}</caption>
-              <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
-                <TableRow>
-                  <TableHead>{t("wallet.colId")}</TableHead>
-                  <TableHead>{t("wallet.colType")}</TableHead>
-                  <TableHead className="text-right">{t("wallet.colAmount")}</TableHead>
-                  <TableHead>{t("wallet.colStatus")}</TableHead>
-                  <TableHead>{t("wallet.colSource")}</TableHead>
-                  <TableHead className="text-right whitespace-nowrap">{t("wallet.colDate")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((tx) => (
-                  <TransactionRow
-                    key={tx.id}
-                    tx={tx}
-                    typeLabel={resolveTransactionTypeLabel(tx, { ...typeLabels, withdrawHold: withdrawHoldLabel })}
-                    statusLabel={statusLabels[tx.status]}
-                    sourceLabel={resolveSourceLabel(tx, walletFundingSourceLabel)}
-                    locale={locale}
-                    copyLabel={t("wallet.copyId")}
-                    copiedMsg={t("wallet.copied")}
-                    copyFailedMsg={t("wallet.copyFailed")}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+              <Table>
+                <caption className="sr-only">{t("wallet.transactions")}</caption>
+                <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                  <TableRow>
+                    <TableHead>{t("wallet.colId")}</TableHead>
+                    <TableHead>{t("wallet.colType")}</TableHead>
+                    <TableHead className="text-right">{t("wallet.colAmount")}</TableHead>
+                    <TableHead>{t("wallet.colStatus")}</TableHead>
+                    <TableHead>{t("wallet.colSource")}</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">
+                      {t("wallet.colDate")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((tx) => (
+                    <TransactionRow
+                      key={tx.id}
+                      tx={tx}
+                      typeLabel={resolveTransactionTypeLabel(tx, {
+                        ...typeLabels,
+                        withdrawHold: withdrawHoldLabel,
+                      })}
+                      statusLabel={statusLabels[tx.status]}
+                      sourceLabel={resolveSourceLabel(tx, walletFundingSourceLabel)}
+                      locale={locale}
+                      copyLabel={t("wallet.copyId")}
+                      copiedMsg={t("wallet.copied")}
+                      copyFailedMsg={t("wallet.copyFailed")}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </>
         )}
       </div>
@@ -203,11 +205,7 @@ export function TransactionsSection({
   );
 
   if (embedded) {
-    return (
-      <section aria-label={t("wallet.transactions")}>
-        {body}
-      </section>
-    );
+    return <section aria-label={t("wallet.transactions")}>{body}</section>;
   }
 
   return (
@@ -261,10 +259,7 @@ function TransactionMobileCard({
           <p className="mt-0.5 text-xs text-muted-foreground">{fmtDate(tx.created_at, locale)}</p>
         </div>
         <span
-          className={cn(
-            "rounded-full px-2 py-0.5 text-xs font-semibold",
-            STATUS_STYLES[tx.status],
-          )}
+          className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", STATUS_STYLES[tx.status])}
         >
           {statusLabel}
         </span>
@@ -291,7 +286,11 @@ function TransactionMobileCard({
           aria-label={`${copyLabel}: ${tx.id}`}
           className="rounded p-1 text-muted-foreground hover:bg-accent"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-emerald-500" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
         </button>
       </div>
     </li>
@@ -354,17 +353,16 @@ function TransactionRow({
       </TableCell>
       <TableCell>{typeLabel}</TableCell>
       <TableCell className="text-right tabular-nums">
-        <span className={cn(isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-foreground")}>
+        <span
+          className={cn(isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-foreground")}
+        >
           {isCredit ? "+" : "−"}
           {fmtKyat(Number(tx.amount))}
         </span>
       </TableCell>
       <TableCell>
         <span
-          className={cn(
-            "rounded-full px-2 py-0.5 text-xs font-semibold",
-            STATUS_STYLES[tx.status],
-          )}
+          className={cn("rounded-full px-2 py-0.5 text-xs font-semibold", STATUS_STYLES[tx.status])}
         >
           {statusLabel}
         </span>

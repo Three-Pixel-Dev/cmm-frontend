@@ -1,6 +1,10 @@
 import type { MarketItem } from "@/hooks/useMarketGroupDetail";
 import { getItemAnswerOptions } from "@/lib/markets/marketItemOptions";
-import { leadingOptionPercent, optionImpliedPercent, realPoolMoney } from "@/lib/markets/optionPricing";
+import {
+  leadingOptionPercent,
+  optionImpliedPercent,
+  realPoolMoney,
+} from "@/lib/markets/optionPricing";
 
 export type VolumeLedger = "real" | "virtual";
 export type VolumeHistoryRange = "5MIN" | "15MIN" | "1H" | "6H" | "1D" | "1W" | "1M" | "ALL";
@@ -85,7 +89,10 @@ export function poolTotalForItem(item: MarketItem, ledger: VolumeLedger): number
   return realPoolMoney(answerOptions, pool ?? null, item.one_share_price);
 }
 
-export function poolYesNoCounts(item: MarketItem, ledger: VolumeLedger): { yes: number; no: number } {
+export function poolYesNoCounts(
+  item: MarketItem,
+  ledger: VolumeLedger,
+): { yes: number; no: number } {
   const pool = ledger === "real" ? item.real_pool : item.virtual_pool;
   if (!pool) {
     return { yes: 0, no: 0 };
@@ -168,7 +175,12 @@ export function shouldDiscardVolumeHistory(
   items: MarketItem[],
   ledger: VolumeLedger,
 ): boolean {
-  if (!isLegacyEqualSplitHistory(rows, items.map((item) => item.id))) {
+  if (
+    !isLegacyEqualSplitHistory(
+      rows,
+      items.map((item) => item.id),
+    )
+  ) {
     return false;
   }
 
@@ -214,7 +226,10 @@ export function volumeChartTimeDomain(
   return [end - windowMs, end];
 }
 
-export function trimVolumeChartToRange(rows: VolumeChartRow[], range: VolumeRange): VolumeChartRow[] {
+export function trimVolumeChartToRange(
+  rows: VolumeChartRow[],
+  range: VolumeRange,
+): VolumeChartRow[] {
   const windowMs = rangeWindowMs(range);
   if (windowMs == null) {
     return rows;
@@ -280,7 +295,11 @@ export function widenVolumeHistoryRange(range: VolumeHistoryRange): VolumeHistor
 }
 
 /** True when persisted history has no visible slope (common with stale/duplicate snapshots). */
-export function isFlatVolumeHistory(rows: VolumeChartRow[], itemIds: string[], tolerance = 1.5): boolean {
+export function isFlatVolumeHistory(
+  rows: VolumeChartRow[],
+  itemIds: string[],
+  tolerance = 1.5,
+): boolean {
   if (rows.length < 2 || itemIds.length === 0) {
     return false;
   }
@@ -381,7 +400,10 @@ export function buildChartLines(
   }));
 }
 
-export function mergeVolumeRowsBySecond(rows: VolumeChartRow[], itemIds: string[]): VolumeChartRow[] {
+export function mergeVolumeRowsBySecond(
+  rows: VolumeChartRow[],
+  itemIds: string[],
+): VolumeChartRow[] {
   const bySecond = new Map<number, VolumeChartRow>();
 
   for (const row of rows) {
@@ -635,9 +657,7 @@ export function poolsSignature(items: MarketItem[], ledger: VolumeLedger): strin
       const pool = ledger === "real" ? item.real_pool : item.virtual_pool;
       if (item.options && item.options.length > 0) {
         const answerOptions = getItemAnswerOptions(item, ledger, "en");
-        const optSig = answerOptions
-          .map((o) => `${o.id}:${o.seedCount}:${o.realCount}`)
-          .join(",");
+        const optSig = answerOptions.map((o) => `${o.id}:${o.seedCount}:${o.realCount}`).join(",");
         return `${item.id}:opts:${optSig}:${poolTotalForItem(item, ledger)}`;
       }
       const { yes, no } = poolYesNoCounts(item, ledger);
