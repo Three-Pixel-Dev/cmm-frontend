@@ -1,13 +1,41 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, Copy, Loader2, Users } from "lucide-react";
+import { Check, Coins, Copy, Loader2, QrCode, UploadCloud, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useHydrated } from "@/hooks/useHydrated";
-import { useJoinRoom, useRoom, useRoomMembers, useRoomPreview } from "@/hooks/useRooms";
+import {
+  useAddVirtualChips,
+  useJoinRoom,
+  useRoom,
+  useRoomMembers,
+  useRoomPreview,
+} from "@/hooks/useRooms";
 import { useAuth } from "@/store/useAuth";
 import { joinFeeCopy, joinModeLabel } from "@/lib/rooms/copy";
 import { getShareOrigin } from "@/lib/app-url";
+import { uploadFile } from "@/lib/api/files";
+import type { RoomMember } from "@/lib/api/rooms";
+import { PaymentQrDialog, type PaymentQrData } from "@/components/game/PaymentQrDialog";
 
 export const Route = createFileRoute("/r/$inviteCode")({
   head: ({ params }) => ({
@@ -15,6 +43,15 @@ export const Route = createFileRoute("/r/$inviteCode")({
   }),
   component: RoomLobbyPage,
 });
+
+const PAYMENT_PROVIDERS = [
+  { id: "MMQR", label: "MMQR (All Banks)" },
+  { id: "KBZPay", label: "KBZPay (KPay)" },
+  { id: "WavePay", label: "WavePay" },
+  { id: "CBPay", label: "CBPay" },
+  { id: "AYAPay", label: "AYA Pay" },
+  { id: "Other", label: "Other" },
+];
 
 function RoomLobbyPage() {
   const { inviteCode } = Route.useParams();
@@ -24,8 +61,9 @@ function RoomLobbyPage() {
   const previewQ = useRoomPreview(inviteCode);
   const roomQ = useRoom(previewQ.data?.id, hydrated && isLoggedIn && !!previewQ.data?.id);
   const membersQ = useRoomMembers(roomQ.data?.id, !!roomQ.data?.is_member);
-  const joinM = useJoinRoom();
   const [copied, setCopied] = useState(false);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [selectedQr, setSelectedQr] = useState<PaymentQrData | null>(null);
 
   const preview = previewQ.data;
   const room = roomQ.data;
@@ -43,15 +81,12 @@ function RoomLobbyPage() {
     }
   };
 
-  const join = () => {
+  const onJoinClick = () => {
     if (!isLoggedIn) {
       void navigate({ to: "/login", search: { redirect: `/r/${inviteCode}` } });
       return;
     }
-    joinM.mutate(inviteCode, {
-      onSuccess: () => toast.success("You're in."),
-      onError: (err: Error) => toast.error(err.message),
-    });
+    setJoinDialogOpen(true);
   };
 
   if (previewQ.isLoading) {
@@ -76,6 +111,8 @@ function RoomLobbyPage() {
     );
   }
 
+  const hostQr = preview.host_payment_qr_url || room?.host_payment_qr_url;
+
   return (
     <main className="game-shell">
       <div className="game-felt mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-6">
@@ -91,11 +128,34 @@ function RoomLobbyPage() {
             {joinModeLabel(preview.join_payment_mode)} ·{" "}
             {joinFeeCopy(preview.join_payment_mode, preview.join_fee)}
           </p>
+
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             <Button type="button" variant="outline" onClick={() => void copyShare()}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               Copy invite
             </Button>
+
+            {hostQr ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+                onClick={() =>
+                  setSelectedQr({
+                    title: "Host Payment QR",
+                    userName: "Room Host",
+                    paymentType: preview.host_payment_type || "MMQR",
+                    accountName: preview.host_payment_account_name,
+                    accountNumber: preview.host_payment_account_number,
+                    qrUrl: hostQr,
+                    note: "Scan to pay table entry fees or settlements directly to Host",
+                  })
+                }
+              >
+                <QrCode className="mr-1.5 h-4 w-4" /> Host QR
+              </Button>
+            ) : null}
+
             {isMember ? (
               <Button asChild>
                 <Link to="/r/$inviteCode/table" params={{ inviteCode }}>
@@ -103,16 +163,16 @@ function RoomLobbyPage() {
                 </Link>
               </Button>
             ) : (
-              <Button onClick={join} disabled={joinM.isPending}>
-                {joinM.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              <Button onClick={onJoinClick}>
                 {preview.join_payment_mode === "required"
                   ? "Pay and join"
                   : preview.join_payment_mode === "after"
                     ? "Join on tab"
-                    : "Join free"}
+                    : "Join table"}
               </Button>
             )}
           </div>
+
           {!isLoggedIn ? (
             <p className="mt-4 text-xs text-muted-foreground">You need a player account to join.</p>
           ) : null}
@@ -120,46 +180,288 @@ function RoomLobbyPage() {
 
         {isMember ? (
           <section className="rounded-2xl border border-white/10 bg-black/30 p-5">
-            <h2 className="flex items-center gap-2 text-sm font-semibold">
-              <Users className="h-4 w-4 text-primary" />
-              Seated ({membersQ.data?.length ?? room?.member_count ?? 0})
-            </h2>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-sm font-semibold">
+                <Users className="h-4 w-4 text-primary" />
+                Seated Players ({membersQ.data?.length ?? room?.member_count ?? 0})
+              </h2>
+            </div>
+            <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
               {(membersQ.data ?? []).map((m) => (
                 <li
                   key={m.id}
-                  className="flex items-center justify-between rounded-xl border border-white/5 bg-black/30 px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-black/40 p-3 text-sm transition-colors hover:border-white/15"
                 >
-                  <div className="flex flex-col">
-                    <span className="truncate font-mono text-xs">{m.user_id.slice(0, 8)}</span>
-                    <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                      {m.role} · {m.join_payment_status}
-                    </span>
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <Avatar className="h-8 w-8 border border-white/10">
+                      <AvatarImage src={m.user_avatar} alt={m.user_name || "Player"} />
+                      <AvatarFallback className="bg-primary/20 text-[11px] font-bold text-primary">
+                        {(m.user_name || "P").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col truncate">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="truncate font-semibold text-xs text-foreground">
+                          {m.user_name || m.user_id.slice(0, 8)}
+                        </span>
+                        {m.role === "admin" ? (
+                          <Badge variant="outline" className="border-amber-400/40 bg-amber-400/10 text-[10px] text-amber-400 py-0 px-1">
+                            Host
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <span className="text-[11px] text-muted-foreground">
+                        {m.join_payment_status}
+                      </span>
+                    </div>
                   </div>
-                  {room?.is_admin ? <AddChipsDialog roomId={room.id} userId={m.user_id} /> : null}
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {m.payment_qr_url || m.payment_account_number ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setSelectedQr({
+                            userName: m.user_name || `Player ${m.user_id.slice(0, 8)}`,
+                            paymentType: m.payment_type || "MMQR",
+                            accountName: m.payment_account_name,
+                            accountNumber: m.payment_account_number,
+                            qrUrl: m.payment_qr_url,
+                            note: m.payment_note,
+                          })
+                        }
+                        className="h-7 gap-1 border-primary/30 bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/20"
+                      >
+                        <QrCode className="h-3.5 w-3.5" />
+                        <span>QR</span>
+                      </Button>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground/60 italic">No QR</span>
+                    )}
+
+                    {room?.is_admin && m.role !== "admin" ? (
+                      <AddChipsDialog roomId={room.id} userId={m.user_id} />
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ul>
           </section>
         ) : null}
       </div>
+
+      {/* Join Dialog with optional QR info */}
+      <JoinTableDialog
+        open={joinDialogOpen}
+        onOpenChange={setJoinDialogOpen}
+        inviteCode={inviteCode}
+        preview={preview}
+      />
+
+      {/* QR Viewer Dialog */}
+      <PaymentQrDialog
+        open={!!selectedQr}
+        onOpenChange={(op) => !op && setSelectedQr(null)}
+        data={selectedQr}
+      />
     </main>
   );
 }
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAddVirtualChips } from "@/hooks/useRooms";
-import { Coins } from "lucide-react";
+function JoinTableDialog({
+  open,
+  onOpenChange,
+  inviteCode,
+  preview,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  inviteCode: string;
+  preview: import("@/lib/api/rooms").RoomPreview;
+}) {
+  const [paymentType, setPaymentType] = useState("MMQR");
+  const [accountName, setAccountName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [qrUrl, setQrUrl] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const joinM = useJoinRoom();
+
+  const handleUpload = async (file: File | undefined | null) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadFile(file);
+      setQrUrl(res.url);
+      toast.success("QR code image uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleJoin = () => {
+    joinM.mutate(
+      {
+        invite_code: inviteCode,
+        payment_type: paymentType,
+        payment_account_name: accountName.trim() || undefined,
+        payment_account_number: accountNumber.trim() || undefined,
+        payment_qr_url: qrUrl || undefined,
+        payment_note: paymentNote.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success("You're in the room!");
+          onOpenChange(false);
+        },
+        onError: (err: Error) => toast.error(err.message),
+      },
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="border-white/15 bg-neutral-950/95 p-6 text-foreground backdrop-blur-xl sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-bold">Join Table: {preview.name}</DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            {preview.join_payment_mode === "required"
+              ? `Table fee: ${preview.join_fee.toLocaleString()} Ks (Required)`
+              : preview.join_payment_mode === "after"
+                ? `Table fee: ${preview.join_fee.toLocaleString()} Ks (Pay after on Tab)`
+                : "Free entry table"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3.5 py-2">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs">
+            <div className="flex items-center gap-2 font-semibold text-primary">
+              <QrCode className="h-4 w-4" />
+              <span>Decentralized Payout QR (Optional)</span>
+            </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Provide your MMQR, KBZPay, or WavePay QR image so the room host can easily send your payouts and winnings. You can also leave this blank and add it later.
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold">Payment Provider</Label>
+            <Select value={paymentType} onValueChange={setPaymentType}>
+              <SelectTrigger className="border-white/10 bg-black/40 text-xs">
+                <SelectValue placeholder="Select Provider" />
+              </SelectTrigger>
+              <SelectContent className="border-white/15 bg-neutral-950 text-foreground text-xs">
+                {PAYMENT_PROVIDERS.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* QR Image Upload */}
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold">QR Code Image</Label>
+            {qrUrl ? (
+              <div className="flex items-center justify-between rounded-lg border border-white/15 bg-black/50 p-2">
+                <img src={qrUrl} alt="QR Preview" className="h-12 w-12 rounded object-contain bg-white p-0.5" />
+                <span className="text-xs text-emerald-400 font-medium">QR Uploaded</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setQrUrl("")}
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-white/20 bg-black/30 p-3 text-xs text-muted-foreground hover:border-white/40 hover:bg-black/40 transition-colors"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => void handleUpload(e.target.files?.[0])}
+                />
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span>Uploading QR...</span>
+                  </>
+                ) : (
+                  <>
+                    <UploadCloud className="h-4 w-4 text-primary" />
+                    <span>Upload MMQR / KPay QR image</span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Account Name</Label>
+              <Input
+                placeholder="e.g. U Kyaw"
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+                className="border-white/10 bg-black/40 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Phone / Number</Label>
+              <Input
+                placeholder="e.g. 09123456789"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                className="border-white/10 bg-black/40 text-xs font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold">Note / Remarks</Label>
+            <Input
+              placeholder="e.g. KPay only"
+              value={paymentNote}
+              onChange={(e) => setPaymentNote(e.target.value)}
+              className="border-white/10 bg-black/40 text-xs"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="mt-2 flex gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleJoin}
+            disabled={joinM.isPending || uploading}
+            className="gap-1.5"
+          >
+            {joinM.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Join Room
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+import { useRef } from "react";
 
 function AddChipsDialog({ roomId, userId }: { roomId: string; userId: string }) {
   const [open, setOpen] = useState(false);
@@ -190,13 +492,16 @@ function AddChipsDialog({ roomId, userId }: { roomId: string; userId: string }) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-primary hover:text-primary">
-          <Coins className="h-4 w-4" />
-          <span className="sr-only">Add Chips</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-xs">
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => setOpen(true)}
+        className="h-7 w-7 p-0 text-primary hover:bg-primary/20 hover:text-primary"
+      >
+        <Coins className="h-3.5 w-3.5" />
+        <span className="sr-only">Add Chips</span>
+      </Button>
+      <DialogContent className="sm:max-w-xs border-white/15 bg-neutral-950/95 text-foreground backdrop-blur-xl">
         <form onSubmit={onSubmit}>
           <DialogHeader>
             <DialogTitle>Add Play Chips</DialogTitle>
@@ -211,6 +516,7 @@ function AddChipsDialog({ roomId, userId }: { roomId: string; userId: string }) 
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
+                className="border-white/10 bg-black/40"
               />
             </div>
           </div>

@@ -82,15 +82,42 @@ export function useCreateRoom() {
 export function useJoinRoom() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (inviteCode: string) => roomsApi.join(inviteCode),
+    mutationFn: (payload: string | import("@/lib/api/rooms").JoinRoomPayload) =>
+      roomsApi.join(payload),
     onSuccess: (room) => {
       void qc.invalidateQueries({ queryKey: [MY_ROOMS_KEY] });
       void qc.invalidateQueries({ queryKey: [ROOM_DETAIL_KEY, room.id] });
+      void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, room.id] });
       void qc.invalidateQueries({ queryKey: [ROOM_PREVIEW_KEY] });
       void qc.invalidateQueries({ queryKey: [WALLET_QUERY_KEY] });
     },
   });
 }
+
+export function useUpdateMemberPaymentQr(roomId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: import("@/lib/api/rooms").UpdateMemberPaymentQrPayload) =>
+      roomsApi.updateMemberPaymentQr(roomId!, payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, roomId] });
+      void qc.invalidateQueries({ queryKey: [ROOM_DETAIL_KEY, roomId] });
+    },
+  });
+}
+
+export function useUpdateHostPaymentQr(roomId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: import("@/lib/api/rooms").UpdateHostPaymentQrPayload) =>
+      roomsApi.updateHostPaymentQr(roomId!, payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [ROOM_DETAIL_KEY, roomId] });
+      void qc.invalidateQueries({ queryKey: [ROOM_PREVIEW_KEY] });
+    },
+  });
+}
+
 
 export function useCreateRoomMarket(roomId: string | undefined) {
   const qc = useQueryClient();

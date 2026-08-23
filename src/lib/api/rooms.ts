@@ -16,6 +16,10 @@ export type RoomPreview = {
   join_payment_mode: JoinPaymentMode;
   join_fee: number;
   status: RoomStatus;
+  host_payment_qr_url?: string;
+  host_payment_type?: string;
+  host_payment_account_name?: string;
+  host_payment_account_number?: string;
 };
 
 export type Room = RoomPreview & {
@@ -30,8 +34,15 @@ export type RoomMember = {
   id: string;
   room_id: string;
   user_id: string;
+  user_name?: string;
+  user_avatar?: string;
   role: RoomMemberRole;
   join_payment_status: JoinPaymentStatus;
+  payment_qr_url?: string;
+  payment_type?: string;
+  payment_account_name?: string;
+  payment_account_number?: string;
+  payment_note?: string;
   created_at: string;
 };
 
@@ -55,6 +66,34 @@ export type CreateRoomPayload = {
   name: string;
   join_payment_mode: JoinPaymentMode;
   join_fee?: number;
+  host_payment_qr_url?: string;
+  host_payment_type?: string;
+  host_payment_account_name?: string;
+  host_payment_account_number?: string;
+};
+
+export type JoinRoomPayload = {
+  invite_code: string;
+  payment_qr_url?: string;
+  payment_type?: string;
+  payment_account_name?: string;
+  payment_account_number?: string;
+  payment_note?: string;
+};
+
+export type UpdateMemberPaymentQrPayload = {
+  payment_qr_url?: string;
+  payment_type?: string;
+  payment_account_name?: string;
+  payment_account_number?: string;
+  payment_note?: string;
+};
+
+export type UpdateHostPaymentQrPayload = {
+  host_payment_qr_url?: string;
+  host_payment_type?: string;
+  host_payment_account_name?: string;
+  host_payment_account_number?: string;
 };
 
 export type CreateRoomMarketPayload = {
@@ -91,13 +130,23 @@ export const roomsApi = {
   create: (payload: CreateRoomPayload) =>
     http.post<ApiEnvelope<Room>>("/rooms", payload).then((r) => unwrap(r.data)),
 
-  join: (inviteCode: string) =>
-    http
-      .post<ApiEnvelope<Room>>("/rooms/join", { invite_code: inviteCode })
-      .then((r) => unwrap(r.data)),
+  join: (payload: string | JoinRoomPayload) => {
+    const body = typeof payload === "string" ? { invite_code: payload } : payload;
+    return http.post<ApiEnvelope<Room>>("/rooms/join", body).then((r) => unwrap(r.data));
+  },
 
   members: (id: string) =>
     http.get<ApiEnvelope<RoomMember[]>>(`/rooms/${id}/members`).then((r) => unwrap(r.data)),
+
+  updateMemberPaymentQr: (roomId: string, payload: UpdateMemberPaymentQrPayload) =>
+    http
+      .put<ApiEnvelope<RoomMember>>(`/rooms/${roomId}/members/me/payment-qr`, payload)
+      .then((r) => unwrap(r.data)),
+
+  updateHostPaymentQr: (roomId: string, payload: UpdateHostPaymentQrPayload) =>
+    http
+      .put<ApiEnvelope<Room>>(`/rooms/${roomId}/host-payment-qr`, payload)
+      .then((r) => unwrap(r.data)),
 
   tabs: (id: string) =>
     http.get<ApiEnvelope<RoomTab[]>>(`/rooms/${id}/tabs`).then((r) => unwrap(r.data)),
