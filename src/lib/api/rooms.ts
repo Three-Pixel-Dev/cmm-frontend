@@ -43,6 +43,7 @@ export type RoomMember = {
   payment_account_name?: string;
   payment_account_number?: string;
   payment_note?: string;
+  chip_balance?: number;
   created_at: string;
 };
 

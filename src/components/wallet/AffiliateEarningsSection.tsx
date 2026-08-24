@@ -128,9 +128,6 @@ export function AffiliateEarningsSection({
                   >
                     {row.bet_side}
                   </Badge>
-                  <Badge variant="outline" className="capitalize">
-                    {row.ledger}
-                  </Badge>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <span className="font-mono text-base font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
@@ -151,7 +148,6 @@ export function AffiliateEarningsSection({
                   <TableHead>{t("wallet.affiliateColItem")}</TableHead>
                   <TableHead>{t("wallet.affiliateColBetSide")}</TableHead>
                   <TableHead className="text-right">{t("wallet.affiliateColEarning")}</TableHead>
-                  <TableHead>{t("wallet.affiliateColLedger")}</TableHead>
                   <TableHead className="text-right">{t("wallet.colDate")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -174,11 +170,6 @@ export function AffiliateEarningsSection({
                     </TableCell>
                     <TableCell className="text-right font-mono font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
                       {formatEarning(row.payout_amount, row.ledger)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {row.ledger}
-                      </Badge>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
                       {fmtDate(row.created_at, locale)}

@@ -4,12 +4,14 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { AvatarPicker } from "@/components/player/AvatarPicker";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authApi } from "@/lib/api/auth";
+import { pickRandomAvatarPath } from "@/lib/avatars";
 import { useAuth } from "@/store/useAuth";
 
 type LoginSearch = { redirect?: string };
@@ -32,6 +34,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [guestName, setGuestName] = useState("");
+  const [guestAvatar, setGuestAvatar] = useState(() => pickRandomAvatarPath());
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -56,7 +59,7 @@ function LoginPage() {
   });
 
   const guestLoginM = useMutation({
-    mutationFn: () => authApi.guestLogin(guestName.trim()),
+    mutationFn: () => authApi.guestLogin(guestName.trim(), guestAvatar),
     onSuccess: (res) => {
       setUser(res.user);
       toast.success(t("login.welcome", { name: res.user.name }));
@@ -78,19 +81,19 @@ function LoginPage() {
   const submitGuest = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!guestName.trim()) {
-      setError("Username is required");
+    if (guestName.trim().length < 2) {
+      setError(t("settings.nicknameTooShort"));
       return;
     }
     guestLoginM.mutate();
   };
 
   return (
-    <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
+    <main className="game-shell flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <BrandLogo variant="full" className="justify-center" />
-          <h1 className="text-2xl font-bold">{t("login.title")}</h1>
+          <h1 className="text-3xl font-bold tracking-wide">{t("login.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
         </div>
 
@@ -103,7 +106,7 @@ function LoginPage() {
           <TabsContent value="account">
             <form
               onSubmit={submit}
-              className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
+              className="hud-panel space-y-4 rounded-2xl p-4 sm:p-6"
               noValidate
             >
               {error && (
@@ -171,7 +174,7 @@ function LoginPage() {
           <TabsContent value="guest">
             <form
               onSubmit={submitGuest}
-              className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
+              className="hud-panel space-y-4 rounded-2xl p-4 sm:p-6"
               noValidate
             >
               {error && (
@@ -192,6 +195,19 @@ function LoginPage() {
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
                   placeholder="Enter a username"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Guest is a one-session seat. The name is only a nickname — logging out starts a
+                  new player. Use Account if you want to keep chips.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>{t("settings.defaultProfile")}</Label>
+                <p className="text-xs text-muted-foreground">{t("settings.defaultProfileDesc")}</p>
+                <AvatarPicker
+                  value={guestAvatar}
+                  onChange={setGuestAvatar}
+                  disabled={guestLoginM.isPending}
                 />
               </div>
               <Button

@@ -8,16 +8,17 @@ export function normalizeInviteCode(raw: string): string {
     .replace(/[^A-Z0-9]/g, "");
 }
 
+export function isPaidJoin(mode: JoinPaymentMode): boolean {
+  return mode === "required" || mode === "after";
+}
+
 export function joinModeLabel(mode: JoinPaymentMode): string {
-  if (mode === "required") return "Pay now";
-  if (mode === "after") return "Pay later";
-  return "Free";
+  return isPaidJoin(mode) ? "Paid (QR/tab)" : "Free";
 }
 
 export function joinFeeCopy(mode: JoinPaymentMode, fee: number): string {
-  if (mode === "free") return "No buy-in";
-  if (mode === "after") return `${fmtKyat(fee)} on tab`;
-  return `${fmtKyat(fee)} to sit`;
+  if (!isPaidJoin(mode)) return "No buy-in";
+  return `${fmtKyat(fee)} via host QR`;
 }
 
 export function stakeModeLabel(mode: StakeMode | undefined): string {

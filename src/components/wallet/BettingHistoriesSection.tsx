@@ -160,9 +160,6 @@ export const BettingHistoriesSection = ({
                     >
                       {answerLabel}
                     </Badge>
-                    <Badge variant="outline" className="capitalize">
-                      {history.ledger}
-                    </Badge>
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                     <div>
@@ -198,7 +195,6 @@ export const BettingHistoriesSection = ({
                   <TableHead className="text-right">{t("wallet.bettingColShares")}</TableHead>
                   <TableHead className="text-right">{t("wallet.colAmount")}</TableHead>
                   <TableHead className="text-right">{t("wallet.bettingColProfit")}</TableHead>
-                  <TableHead>{t("wallet.affiliateColLedger")}</TableHead>
                   <TableHead className="text-right">{t("wallet.colDate")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -227,11 +223,6 @@ export const BettingHistoriesSection = ({
                       </TableCell>
                       <TableCell className="text-right">
                         <ProfitCell history={history} item={item} itemsLoading={isLoadingItems} />
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {history.ledger}
-                        </Badge>
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-right text-xs text-muted-foreground">
                         {fmtDate(history.created_at, locale)}

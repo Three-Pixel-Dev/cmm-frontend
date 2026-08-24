@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="rabbit">
+  <defs>
+    <linearGradient id="bg-rabbit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#db2777"/>
+      <stop offset="1" stop-color="#f9a8d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="48" fill="url(#bg-rabbit)"/>
+
+  <ellipse cx="32" cy="10" rx="8" ry="20" fill="#db2777" stroke="#831843" stroke-width="2"/>
+  <ellipse cx="64" cy="10" rx="8" ry="20" fill="#db2777" stroke="#831843" stroke-width="2"/>
+  <ellipse cx="32" cy="12" rx="3.5" ry="12" fill="#fbcfe8"/>
+  <ellipse cx="64" cy="12" rx="3.5" ry="12" fill="#fbcfe8"/>
+  <circle cx="36" cy="46" r="10" fill="#fff"/>
+  <circle cx="60" cy="46" r="10" fill="#fff"/>
+  <circle cx="38" cy="48" r="4.5" fill="#831843"/>
+  <circle cx="62" cy="48" r="4.5" fill="#831843"/>
+  <circle cx="40" cy="46" r="1.6" fill="#fff"/>
+  <circle cx="64" cy="46" r="1.6" fill="#fff"/>
+  <path d="M36 70 Q48 78 60 70" fill="none" stroke="#831843" stroke-width="3" stroke-linecap="round"/>
+</svg>

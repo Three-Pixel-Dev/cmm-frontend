@@ -208,7 +208,7 @@ function P2PApplyPage() {
   );
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8 sm:py-10" aria-labelledby="p2p-apply-heading">
+    <main className="game-shell mx-auto max-w-2xl px-4 py-8 sm:py-10" aria-labelledby="p2p-apply-heading">
       <Link
         to="/p2p"
         className="mb-6 inline-flex min-h-11 items-center gap-2 rounded-lg px-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

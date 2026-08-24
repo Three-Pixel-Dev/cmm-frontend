@@ -23,7 +23,13 @@ export const betsApi = {
         },
       )
       .then((r) => unwrap(r.data)),
-  list: (params?: { page?: number; limit?: number; user_id?: string; market_item_id?: string }) =>
+  list: (params?: {
+    page?: number;
+    limit?: number;
+    user_id?: string;
+    market_item_id?: string;
+    ledger?: "real" | "virtual";
+  }) =>
     http
       .get<ApiEnvelope<ApiPaged<ApiBettingHistory>>>("/bets", { params })
       .then((r) => unwrap(r.data)),

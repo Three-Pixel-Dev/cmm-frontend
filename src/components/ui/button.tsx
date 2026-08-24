@@ -5,22 +5,25 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-display text-sm font-semibold tracking-wide cursor-pointer transition-[transform,box-shadow,background-color,filter,color] duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed active:translate-y-px [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        default:
+          "bg-primary text-primary-foreground shadow-[0_3px_0_0_color-mix(in_oklab,var(--primary)_42%,black),0_0_16px_color-mix(in_oklab,var(--primary)_28%,transparent)] hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_0_color-mix(in_oklab,var(--primary)_42%,black)]",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-[0_3px_0_0_color-mix(in_oklab,var(--destructive)_42%,black)] hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_0_color-mix(in_oklab,var(--destructive)_42%,black)]",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+          "border border-primary/30 bg-card/60 shadow-[inset_0_1px_0_color-mix(in_oklab,white_8%,transparent)] hover:border-primary/55 hover:bg-primary/10 hover:text-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-[inset_0_1px_0_color-mix(in_oklab,white_6%,transparent)] hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        sm: "h-8 rounded-lg px-3 text-xs",
+        lg: "h-11 rounded-lg px-8",
         icon: "h-9 w-9",
       },
     },

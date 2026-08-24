@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { ApiUser } from "@/lib/api/types";
+import { isGuestEmail } from "@/lib/guest";
 
 type AuthState = {
   user: ApiUser | null;
@@ -9,6 +10,7 @@ type AuthState = {
   logout: () => void;
   isLoggedIn: () => boolean;
   isHost: () => boolean;
+  isGuest: () => boolean;
 };
 
 export const useAuth = create<AuthState>()(
@@ -23,6 +25,7 @@ export const useAuth = create<AuthState>()(
         const role = (get().user?.role_name ?? "").toLowerCase();
         return role === "admin" || role === "super_admin";
       },
+      isGuest: () => isGuestEmail(get().user?.email),
     }),
     { name: "cmm-auth" },
   ),

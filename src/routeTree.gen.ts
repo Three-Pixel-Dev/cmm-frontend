@@ -21,7 +21,6 @@ import { Route as P2pIndexRouteImport } from './routes/p2p.index'
 import { Route as SettingsProfileRouteImport } from './routes/settings.profile'
 import { Route as SettingsPreferencesRouteImport } from './routes/settings.preferences'
 import { Route as SettingsPaymentRouteImport } from './routes/settings.payment'
-import { Route as SettingsBettingmodeRouteImport } from './routes/settings.bettingmode'
 import { Route as RInviteCodeRouteImport } from './routes/r.$inviteCode'
 import { Route as P2pApplyRouteImport } from './routes/p2p.apply'
 import { Route as MarketsMarketIdRouteImport } from './routes/markets.$marketId'
@@ -87,11 +86,6 @@ const SettingsPaymentRoute = SettingsPaymentRouteImport.update({
   path: '/payment',
   getParentRoute: () => SettingsRoute,
 } as any)
-const SettingsBettingmodeRoute = SettingsBettingmodeRouteImport.update({
-  id: '/bettingmode',
-  path: '/bettingmode',
-  getParentRoute: () => SettingsRoute,
-} as any)
 const RInviteCodeRoute = RInviteCodeRouteImport.update({
   id: '/r/$inviteCode',
   path: '/r/$inviteCode',
@@ -124,7 +118,6 @@ export interface FileRoutesByFullPath {
   '/markets/$marketId': typeof MarketsMarketIdRoute
   '/p2p/apply': typeof P2pApplyRoute
   '/r/$inviteCode': typeof RInviteCodeRoute
-  '/settings/bettingmode': typeof SettingsBettingmodeRoute
   '/settings/payment': typeof SettingsPaymentRoute
   '/settings/preferences': typeof SettingsPreferencesRoute
   '/settings/profile': typeof SettingsProfileRoute
@@ -141,7 +134,6 @@ export interface FileRoutesByTo {
   '/markets/$marketId': typeof MarketsMarketIdRoute
   '/p2p/apply': typeof P2pApplyRoute
   '/r/$inviteCode': typeof RInviteCodeRoute
-  '/settings/bettingmode': typeof SettingsBettingmodeRoute
   '/settings/payment': typeof SettingsPaymentRoute
   '/settings/preferences': typeof SettingsPreferencesRoute
   '/settings/profile': typeof SettingsProfileRoute
@@ -161,7 +153,6 @@ export interface FileRoutesById {
   '/markets/$marketId': typeof MarketsMarketIdRoute
   '/p2p/apply': typeof P2pApplyRoute
   '/r/$inviteCode': typeof RInviteCodeRoute
-  '/settings/bettingmode': typeof SettingsBettingmodeRoute
   '/settings/payment': typeof SettingsPaymentRoute
   '/settings/preferences': typeof SettingsPreferencesRoute
   '/settings/profile': typeof SettingsProfileRoute
@@ -182,7 +173,6 @@ export interface FileRouteTypes {
     | '/markets/$marketId'
     | '/p2p/apply'
     | '/r/$inviteCode'
-    | '/settings/bettingmode'
     | '/settings/payment'
     | '/settings/preferences'
     | '/settings/profile'
@@ -199,7 +189,6 @@ export interface FileRouteTypes {
     | '/markets/$marketId'
     | '/p2p/apply'
     | '/r/$inviteCode'
-    | '/settings/bettingmode'
     | '/settings/payment'
     | '/settings/preferences'
     | '/settings/profile'
@@ -218,7 +207,6 @@ export interface FileRouteTypes {
     | '/markets/$marketId'
     | '/p2p/apply'
     | '/r/$inviteCode'
-    | '/settings/bettingmode'
     | '/settings/payment'
     | '/settings/preferences'
     | '/settings/profile'
@@ -326,13 +314,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsPaymentRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/settings/bettingmode': {
-      id: '/settings/bettingmode'
-      path: '/bettingmode'
-      fullPath: '/settings/bettingmode'
-      preLoaderRoute: typeof SettingsBettingmodeRouteImport
-      parentRoute: typeof SettingsRoute
-    }
     '/r/$inviteCode': {
       id: '/r/$inviteCode'
       path: '/r/$inviteCode'
@@ -377,7 +358,6 @@ const P2pRouteChildren: P2pRouteChildren = {
 const P2pRouteWithChildren = P2pRoute._addFileChildren(P2pRouteChildren)
 
 interface SettingsRouteChildren {
-  SettingsBettingmodeRoute: typeof SettingsBettingmodeRoute
   SettingsPaymentRoute: typeof SettingsPaymentRoute
   SettingsPreferencesRoute: typeof SettingsPreferencesRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
@@ -385,7 +365,6 @@ interface SettingsRouteChildren {
 }
 
 const SettingsRouteChildren: SettingsRouteChildren = {
-  SettingsBettingmodeRoute: SettingsBettingmodeRoute,
   SettingsPaymentRoute: SettingsPaymentRoute,
   SettingsPreferencesRoute: SettingsPreferencesRoute,
   SettingsProfileRoute: SettingsProfileRoute,

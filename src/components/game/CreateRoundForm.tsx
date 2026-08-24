@@ -47,9 +47,9 @@ export function CreateRoundForm({ roomId }: { roomId: string }) {
   return (
     <form
       onSubmit={submit}
-      className="space-y-3 rounded-2xl border border-primary/25 bg-black/40 p-4"
+      className="hud-panel space-y-3 rounded-2xl border-primary/30 p-4"
     >
-      <p className="text-sm font-semibold tracking-wide text-primary">Deal a round</p>
+      <p className="font-display text-sm font-semibold tracking-wide text-primary">Deal a round</p>
       <div className="space-y-1.5">
         <Label htmlFor="round-title">Question</Label>
         <Input
@@ -92,8 +92,8 @@ export function CreateRoundForm({ roomId }: { roomId: string }) {
             onClick={() => setStakeMode(value)}
             className={
               stakeMode === value
-                ? "rounded-xl border border-primary bg-primary/15 px-3 py-2 text-sm font-semibold text-primary"
-                : "rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-muted-foreground"
+                ? "hud-choice hud-choice-active rounded-xl px-3 py-2 font-display text-sm font-semibold"
+                : "hud-choice rounded-xl px-3 py-2 font-display text-sm text-muted-foreground"
             }
           >
             {label}

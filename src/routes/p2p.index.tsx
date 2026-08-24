@@ -157,11 +157,11 @@ function P2PPage() {
   };
 
   return (
-    <main className="mx-auto max-w-[1400px] px-4 py-6 space-y-6">
+    <main className="game-shell mx-auto max-w-[1400px] px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold sm:text-3xl">
+          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-wide sm:text-3xl">
             <span className="text-2xl">🤝</span> {t("p2p.title")}
           </h1>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t("p2p.subtitle")}</p>
@@ -433,8 +433,8 @@ function P2PPage() {
 
 function StatBox({ value, label, cls }: { value: string; label: string; cls?: string }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-card px-3 py-2 text-center sm:px-4">
-      <div className={cn("text-base font-bold tabular-nums sm:text-lg", cls)}>{value}</div>
+    <div className="hud-panel rounded-xl px-3 py-2 text-center sm:px-4">
+      <div className={cn("font-display text-base font-bold tabular-nums sm:text-lg", cls)}>{value}</div>
       <div className="text-[10px] text-muted-foreground sm:text-xs">{label}</div>
     </div>
   );

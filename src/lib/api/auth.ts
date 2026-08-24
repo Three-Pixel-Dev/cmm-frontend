@@ -14,9 +14,11 @@ export const authApi = {
       .post<ApiEnvelope<AuthResult>>("/auth/login", { email, password }, { _skipAuthRefresh: true })
       .then((r) => unwrap(r.data)),
 
-  guestLogin: (name: string) =>
+  guestLogin: (name: string, profileUrl?: string) =>
     http
-      .post<ApiEnvelope<AuthResult>>("/auth/guest-login", { name }, { _skipAuthRefresh: true })
+      .post<
+        ApiEnvelope<AuthResult>
+      >("/auth/guest-login", { name, profile_url: profileUrl }, { _skipAuthRefresh: true })
       .then((r) => unwrap(r.data)),
 
   codeLogin: (code: string) =>

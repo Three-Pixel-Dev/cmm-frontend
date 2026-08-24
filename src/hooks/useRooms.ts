@@ -7,7 +7,6 @@ import {
   type CreateRoomPayload,
   type RoomMessage,
 } from "@/lib/api/rooms";
-import { WALLET_QUERY_KEY } from "@/lib/api/wallet";
 
 export const ROOM_PREVIEW_KEY = "room-preview";
 export const MY_ROOMS_KEY = "rooms-mine";
@@ -89,7 +88,6 @@ export function useJoinRoom() {
       void qc.invalidateQueries({ queryKey: [ROOM_DETAIL_KEY, room.id] });
       void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, room.id] });
       void qc.invalidateQueries({ queryKey: [ROOM_PREVIEW_KEY] });
-      void qc.invalidateQueries({ queryKey: [WALLET_QUERY_KEY] });
     },
   });
 }
@@ -135,7 +133,7 @@ export function useCollectRoomTabs(roomId: string | undefined) {
     mutationFn: () => roomsApi.collectTabs(roomId!),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [ROOM_TABS_KEY, roomId] });
-      void qc.invalidateQueries({ queryKey: [WALLET_QUERY_KEY] });
+      void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, roomId] });
     },
   });
 }
@@ -145,6 +143,9 @@ export function useAddVirtualChips(roomId: string | undefined) {
   return useMutation({
     mutationFn: ({ userId, amount }: { userId: string; amount: number }) =>
       roomsApi.addVirtualChips(roomId!, userId, amount),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, roomId] });
+    },
   });
 }
 

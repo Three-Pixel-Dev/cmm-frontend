@@ -7,8 +7,9 @@ import { BettingHistoriesSection } from "@/components/wallet/BettingHistoriesSec
 import { AffiliateEarningsSection } from "@/components/wallet/AffiliateEarningsSection";
 import { FundingRequestsSection } from "@/components/wallet/FundingRequestsSection";
 
-export function WalletActivityPanel({ userId }: { userId: string }) {
+export function WalletActivityPanel({ userId, guest = false }: { userId: string; guest?: boolean }) {
   const { t } = useTranslation();
+  const tabCols = guest ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-4";
 
   return (
     <Card className="border-border/60 shadow-sm">
@@ -17,8 +18,8 @@ export function WalletActivityPanel({ userId }: { userId: string }) {
         <CardDescription>{t("wallet.sectionActivityHint")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="transactions" className="w-full">
-          <TabsList className="mb-4 flex h-auto w-full flex-col gap-1 p-1 sm:grid sm:grid-cols-2 lg:grid-cols-4">
+        <Tabs defaultValue={guest ? "betting" : "transactions"} className="w-full">
+          <TabsList className={`mb-4 flex h-auto w-full flex-col gap-1 p-1 sm:grid ${tabCols}`}>
             <TabsTrigger
               value="transactions"
               className="w-full justify-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm"
@@ -26,13 +27,15 @@ export function WalletActivityPanel({ userId }: { userId: string }) {
               <ReceiptText className="hidden h-4 w-4 sm:block" aria-hidden />
               {t("wallet.tabTransactions")}
             </TabsTrigger>
-            <TabsTrigger
-              value="requests"
-              className="w-full justify-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm"
-            >
-              <ClipboardList className="hidden h-4 w-4 sm:block" aria-hidden />
-              {t("wallet.tabRequests")}
-            </TabsTrigger>
+            {guest ? null : (
+              <TabsTrigger
+                value="requests"
+                className="w-full justify-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm"
+              >
+                <ClipboardList className="hidden h-4 w-4 sm:block" aria-hidden />
+                {t("wallet.tabRequests")}
+              </TabsTrigger>
+            )}
             <TabsTrigger
               value="betting"
               className="w-full justify-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm"
@@ -40,27 +43,33 @@ export function WalletActivityPanel({ userId }: { userId: string }) {
               <History className="hidden h-4 w-4 sm:block" aria-hidden />
               {t("wallet.tabBetting")}
             </TabsTrigger>
-            <TabsTrigger
-              value="affiliate"
-              className="w-full justify-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm"
-            >
-              <Link2 className="hidden h-4 w-4 sm:block" aria-hidden />
-              {t("wallet.tabAffiliate")}
-            </TabsTrigger>
+            {guest ? null : (
+              <TabsTrigger
+                value="affiliate"
+                className="w-full justify-center gap-1.5 px-2 py-2.5 text-xs sm:text-sm"
+              >
+                <Link2 className="hidden h-4 w-4 sm:block" aria-hidden />
+                {t("wallet.tabAffiliate")}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="transactions" className="mt-0 focus-visible:ring-0">
             <TransactionsSection userId={userId} embedded />
           </TabsContent>
-          <TabsContent value="requests" className="mt-0 focus-visible:ring-0">
-            <FundingRequestsSection embedded />
-          </TabsContent>
+          {guest ? null : (
+            <TabsContent value="requests" className="mt-0 focus-visible:ring-0">
+              <FundingRequestsSection embedded />
+            </TabsContent>
+          )}
           <TabsContent value="betting" className="mt-0 focus-visible:ring-0">
             <BettingHistoriesSection userId={userId} embedded />
           </TabsContent>
-          <TabsContent value="affiliate" className="mt-0 focus-visible:ring-0">
-            <AffiliateEarningsSection userId={userId} embedded />
-          </TabsContent>
+          {guest ? null : (
+            <TabsContent value="affiliate" className="mt-0 focus-visible:ring-0">
+              <AffiliateEarningsSection userId={userId} embedded />
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>

@@ -4,7 +4,7 @@ import { Loader2, QrCode, Settings, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PlayerAvatar } from "@/components/player/PlayerAvatar";
 import { CreateRoundForm } from "@/components/game/CreateRoundForm";
 import { RoundCard } from "@/components/game/RoundCard";
 import { RoomChat } from "@/components/game/RoomChat";
@@ -17,7 +17,6 @@ import {
   useRoomPreview,
   useRoomTabs,
 } from "@/hooks/useRooms";
-import { useWallet, parseWalletAmount } from "@/hooks/useWallet";
 import { useAuth } from "@/store/useAuth";
 import { fmtKyat } from "@/lib/format";
 import { PaymentQrDialog, type PaymentQrData } from "@/components/game/PaymentQrDialog";
@@ -35,6 +34,7 @@ function RoomTablePage() {
   const hydrated = useHydrated();
   const user = useAuth((s) => s.user);
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const isHost = useAuth((s) => s.isHost());
   const previewQ = useRoomPreview(inviteCode);
   const roomQ = useRoom(previewQ.data?.id, hydrated && isLoggedIn && !!previewQ.data?.id);
   const room = roomQ.data;
@@ -42,10 +42,6 @@ function RoomTablePage() {
   const marketsQ = useRoomMarkets(room?.id, !!room?.is_member);
   const tabsQ = useRoomTabs(room?.id, !!room?.is_admin);
   const collectM = useCollectRoomTabs(room?.id);
-  const { data: wallet } = useWallet(isLoggedIn ? user?.id : undefined);
-  const chips = parseWalletAmount(
-    room?.join_payment_mode === "free" ? wallet?.virtual_amount : wallet?.amount,
-  );
 
   const [selectedQr, setSelectedQr] = useState<PaymentQrData | null>(null);
   const [myQrModalOpen, setMyQrModalOpen] = useState(false);
@@ -62,12 +58,20 @@ function RoomTablePage() {
   if (!isLoggedIn || !room?.is_member) {
     return (
       <main className="game-shell mx-auto max-w-lg px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">Join the table first</h1>
-        <p className="mt-2 text-sm text-muted-foreground">This felt is members only.</p>
+        <h1 className="text-2xl font-bold">
+          {isHost ? "This is not your table" : "Join the table first"}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {isHost ? "Host accounts only sit at tables they opened." : "This felt is members only."}
+        </p>
         <Button asChild className="mt-6">
-          <Link to="/r/$inviteCode" params={{ inviteCode }}>
-            Back to lobby
-          </Link>
+          {isHost ? (
+            <Link to="/">Back to rooms</Link>
+          ) : (
+            <Link to="/r/$inviteCode" params={{ inviteCode }}>
+              Back to lobby
+            </Link>
+          )}
         </Button>
       </main>
     );
@@ -79,13 +83,14 @@ function RoomTablePage() {
   );
   const members = membersQ.data ?? [];
   const myMember = members.find((m) => m.user_id === user?.id);
+  const chips = myMember?.chip_balance ?? 0;
   const hostQr = room.host_payment_qr_url || previewQ.data?.host_payment_qr_url;
 
   return (
     <main className="game-shell">
       <div className="game-felt mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
         {/* Header HUD */}
-        <header className="chip-hud flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/50 px-4 py-3">
+        <header className="chip-hud hud-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
           <div>
             <Link
               to="/r/$inviteCode"
@@ -94,7 +99,7 @@ function RoomTablePage() {
             >
               {room.invite_code}
             </Link>
-            <h1 className="text-xl font-bold">{room.name}</h1>
+            <h1 className="text-xl font-bold tracking-wide">{room.name}</h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -120,21 +125,23 @@ function RoomTablePage() {
               </Button>
             ) : null}
 
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setMyQrModalOpen(true)}
-              className="h-8 gap-1.5 border-white/15 bg-black/40 text-xs font-medium text-foreground hover:bg-white/10"
-            >
-              <QrCode className="h-3.5 w-3.5 text-primary" />
-              <span>My Payout QR</span>
-              {myMember?.payment_qr_url ? (
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              ) : null}
-            </Button>
+            {!room.is_admin ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setMyQrModalOpen(true)}
+                className="h-8 gap-1.5 border-white/15 bg-black/40 text-xs font-medium text-foreground hover:bg-white/10"
+              >
+                <QrCode className="h-3.5 w-3.5 text-primary" />
+                <span>My Payout QR</span>
+                {myMember?.payment_qr_url ? (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                ) : null}
+              </Button>
+            ) : null}
 
-            <div className="rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-semibold tabular-nums text-primary">
-              {fmtKyat(chips)} chips
+            <div className="rounded-full border border-primary/35 bg-primary/10 px-4 py-1.5 font-display text-sm font-bold tabular-nums text-primary">
+              {fmtKyat(chips)} table chips
             </div>
           </div>
         </header>
@@ -146,7 +153,7 @@ function RoomTablePage() {
 
             <div className="flex flex-col gap-4">
               {/* Host Settings & Tabs Card */}
-              <section className="rounded-2xl border border-white/10 bg-black/35 p-4">
+              <section className="hud-panel rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-2">
                   <h2 className="text-sm font-semibold">Table Tabs</h2>
                   <div className="flex items-center gap-2">
@@ -186,7 +193,7 @@ function RoomTablePage() {
                     {pendingTabs.map((tab) => (
                       <li
                         key={tab.id}
-                        className="flex justify-between rounded-lg bg-black/30 px-3 py-1.5"
+                        className="flex justify-between rounded-lg bg-elevated/70 px-3 py-1.5"
                       >
                         <span className="uppercase tracking-wide text-muted-foreground">
                           {tab.kind} · {tab.status}
@@ -199,7 +206,7 @@ function RoomTablePage() {
               </section>
 
               {/* Seated Players & Payout QRs Card */}
-              <section className="rounded-2xl border border-white/10 bg-black/35 p-4">
+              <section className="hud-panel rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-2">
                   <h2 className="flex items-center gap-1.5 text-sm font-semibold">
                     <Users className="h-4 w-4 text-primary" />
@@ -214,27 +221,34 @@ function RoomTablePage() {
                     {members.map((m) => (
                       <li
                         key={m.id}
-                        className="flex items-center justify-between gap-2 rounded-xl border border-white/5 bg-black/40 px-3 py-2"
+                        className="flex items-center justify-between gap-2 rounded-xl border border-primary/10 bg-elevated/60 px-3 py-2"
                       >
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <Avatar className="h-6 w-6 border border-white/10">
-                            <AvatarImage src={m.user_avatar} alt={m.user_name || "Player"} />
-                            <AvatarFallback className="bg-primary/20 text-[10px] font-bold text-primary">
-                              {(m.user_name || "P").slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                          <PlayerAvatar
+                            src={m.user_avatar}
+                            name={m.user_name || "Player"}
+                            className="h-6 w-6"
+                            fallbackClassName="text-[10px] font-bold"
+                          />
                           <span className="truncate font-semibold text-foreground">
                             {m.user_name || m.user_id.slice(0, 8)}
                           </span>
+                          <span className="font-display text-[10px] font-bold tabular-nums text-primary">
+                            {fmtKyat(m.chip_balance ?? 0)}
+                          </span>
                           {m.role === "admin" ? (
-                            <Badge variant="outline" className="border-amber-400/40 bg-amber-400/10 text-[9px] text-amber-400 py-0 px-1">
+                            <Badge
+                              variant="outline"
+                              className="border-amber-400/40 bg-amber-400/10 text-[9px] text-amber-400 py-0 px-1"
+                            >
                               Host
                             </Badge>
                           ) : null}
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                          {m.payment_qr_url || m.payment_account_number ? (
+                          {m.role === "admin" ? null : m.payment_qr_url ||
+                            m.payment_account_number ? (
                             <Button
                               size="sm"
                               variant="outline"
@@ -254,7 +268,9 @@ function RoomTablePage() {
                               <span>View QR</span>
                             </Button>
                           ) : (
-                            <span className="text-[10px] text-muted-foreground/60 italic">No QR</span>
+                            <span className="text-[10px] text-muted-foreground/60 italic">
+                              No QR
+                            </span>
                           )}
                         </div>
                       </li>
@@ -266,47 +282,43 @@ function RoomTablePage() {
           </div>
         ) : null}
 
-        {/* Rounds and Chat */}
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Rounds
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                {groups.length} {groups.length === 1 ? "round" : "rounds"}
-              </span>
+        {/* Rounds */}
+        <section className="space-y-4 pb-20">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Rounds
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {groups.length} {groups.length === 1 ? "round" : "rounds"}
+            </span>
+          </div>
+
+          {marketsQ.isLoading ? (
+            <div className="flex min-h-40 items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-
-            {marketsQ.isLoading ? (
-              <div className="flex min-h-40 items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : groups.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-white/15 px-4 py-10 text-center text-sm text-muted-foreground">
-                No rounds yet.
-                {room.is_admin ? " Deal one from the host panel." : " Wait for the host."}
-              </p>
-            ) : (
-              <div className="grid gap-4">
-                {groups.map((group) => (
-                  <RoundCard
-                    key={group.id}
-                    group={group}
-                    roomId={room.id}
-                    isHost={room.is_admin}
-                    isFree={room.join_payment_mode === "free"}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-
-          <aside className="sticky top-20 self-start">
-            <RoomChat roomId={room.id} isMember={room.is_member} />
-          </aside>
-        </div>
+          ) : groups.length === 0 ? (
+            <p className="hud-panel rounded-2xl border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
+              No rounds yet.
+              {room.is_admin ? " Deal one from the host panel." : " Wait for the host."}
+            </p>
+          ) : (
+            <div className="grid gap-4">
+              {groups.map((group) => (
+                <RoundCard
+                  key={group.id}
+                  group={group}
+                  roomId={room.id}
+                  isHost={room.is_admin}
+                  members={members}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
+
+      <RoomChat roomId={room.id} isMember={room.is_member} />
 
       {/* QR Viewer Dialog */}
       <PaymentQrDialog
@@ -316,19 +328,21 @@ function RoomTablePage() {
       />
 
       {/* Player's Upload QR Modal */}
-      <UploadPaymentQrModal
-        open={myQrModalOpen}
-        onOpenChange={setMyQrModalOpen}
-        roomId={room.id}
-        isHost={false}
-        initialValues={{
-          payment_type: myMember?.payment_type,
-          payment_account_name: myMember?.payment_account_name,
-          payment_account_number: myMember?.payment_account_number,
-          payment_qr_url: myMember?.payment_qr_url,
-          payment_note: myMember?.payment_note,
-        }}
-      />
+      {!room.is_admin ? (
+        <UploadPaymentQrModal
+          open={myQrModalOpen}
+          onOpenChange={setMyQrModalOpen}
+          roomId={room.id}
+          isHost={false}
+          initialValues={{
+            payment_type: myMember?.payment_type,
+            payment_account_name: myMember?.payment_account_name,
+            payment_account_number: myMember?.payment_account_number,
+            payment_qr_url: myMember?.payment_qr_url,
+            payment_note: myMember?.payment_note,
+          }}
+        />
+      ) : null}
 
       {/* Host's Payment QR Modal */}
       {room.is_admin ? (

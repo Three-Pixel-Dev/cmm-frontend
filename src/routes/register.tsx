@@ -153,11 +153,11 @@ function RegisterPage() {
   const currentIndex = steps.findIndex((s) => s.key === step);
 
   return (
-    <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
+    <main className="game-shell flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <BrandLogo variant="full" className="justify-center" />
-          <h1 className="text-2xl font-bold">{t("login.registerTitle")}</h1>
+          <h1 className="text-3xl font-bold tracking-wide">{t("login.registerTitle")}</h1>
           <p className="text-sm text-muted-foreground">{t("login.registerSubtitle")}</p>
         </div>
 
@@ -188,7 +188,7 @@ function RegisterPage() {
           ))}
         </ol>
 
-        <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6">
+        <div className="hud-panel rounded-2xl p-4 sm:p-6">
           {error && (
             <div
               role="alert"

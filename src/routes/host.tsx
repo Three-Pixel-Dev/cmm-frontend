@@ -52,14 +52,14 @@ function HostLoginPage() {
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center px-4 py-10">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <BrandLogo variant="full" className="justify-center" />
-          <h1 className="text-2xl font-bold">Host access</h1>
+          <h1 className="text-3xl font-bold tracking-wide">Host access</h1>
           <p className="text-sm text-muted-foreground">
             Superadmin issues a code. First use creates your host account.
           </p>
         </div>
         <form
           onSubmit={submit}
-          className="space-y-4 rounded-2xl border border-white/10 bg-black/40 p-5 shadow-sm sm:p-6"
+          className="hud-panel space-y-4 rounded-2xl p-5 sm:p-6"
           noValidate
         >
           {error ? (

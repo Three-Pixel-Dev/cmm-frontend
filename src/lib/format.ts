@@ -8,21 +8,15 @@ export const fmtKyat = (n: number, digits = 0) =>
 export const fmtKyatCompact = (n: number) =>
   `K ${Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(n * USD_TO_MMK)}`;
 
-/** Play / virtual wallet credits. */
-export const fmtVKyat = (n: number, digits = 0) =>
-  `vK ${(n * USD_TO_MMK).toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
-
-export const fmtVKyatCompact = (n: number) =>
-  `vK ${Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(n * USD_TO_MMK)}`;
+/** Legacy alias — play credits now share the same chip balance. */
+export const fmtVKyat = fmtKyat;
+export const fmtVKyatCompact = fmtKyatCompact;
 
 export function fmtLedger(
   n: number,
-  ledger: LedgerKind,
+  _ledger?: LedgerKind,
   opts?: { compact?: boolean; digits?: number },
 ): string {
-  if (ledger === "virtual") {
-    return opts?.compact ? fmtVKyatCompact(n) : fmtVKyat(n, opts?.digits ?? 0);
-  }
   return opts?.compact ? fmtKyatCompact(n) : fmtKyat(n, opts?.digits ?? 0);
 }
 
@@ -41,6 +35,15 @@ export const fmtDate = (iso: string, locale = "en") =>
     month: "short",
     day: "numeric",
     year: "numeric",
+  });
+
+export const fmtDateTime = (iso: string, locale = "en") =>
+  new Date(iso).toLocaleString(locale === "my" ? "my-MM" : "en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 
 /** Masks email for display, e.g. thanhttoo128@gmail.com → thant....8@gmail.com */

@@ -12,7 +12,7 @@ export function CreateRoomForm() {
   const navigate = useNavigate();
   const create = useCreateRoom();
   const [name, setName] = useState("");
-  const [mode, setMode] = useState<JoinPaymentMode>("required");
+  const [mode, setMode] = useState<JoinPaymentMode>("after");
   const [fee, setFee] = useState("1000");
 
   const submit = (e: React.FormEvent) => {
@@ -56,11 +56,10 @@ export function CreateRoomForm() {
       </div>
       <div className="grid gap-2">
         <Label>Buy-in</Label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {(
             [
-              ["required", "Pay now"],
-              ["after", "Pay later"],
+              ["after", "Paid (QR/tab)"],
               ["free", "Free"],
             ] as const
           ).map(([value, label]) => (
@@ -70,8 +69,8 @@ export function CreateRoomForm() {
               onClick={() => setMode(value)}
               className={
                 mode === value
-                  ? "rounded-xl border border-primary bg-primary/15 px-3 py-2 text-sm font-semibold text-primary"
-                  : "rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-muted-foreground hover:border-white/25"
+                  ? "hud-choice hud-choice-active rounded-xl px-3 py-2 font-display text-sm font-semibold"
+                  : "hud-choice rounded-xl px-3 py-2 font-display text-sm text-muted-foreground"
               }
             >
               {label}
@@ -88,6 +87,9 @@ export function CreateRoomForm() {
             value={fee}
             onChange={(e) => setFee(e.target.value.replace(/[^\d]/g, ""))}
           />
+          <p className="text-xs text-muted-foreground">
+            Player sits now. They pay you this amount via Host QR; Collect unpaid when cash is in.
+          </p>
         </div>
       ) : null}
       <Button type="submit" className="w-full font-semibold" disabled={create.isPending}>

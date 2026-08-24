@@ -1,8 +1,4 @@
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { profileApi } from "@/lib/api/profile";
 import type { ApiProfile } from "@/lib/api/types";
 import { useAuth } from "@/store/useAuth";
@@ -12,7 +8,7 @@ export const PROFILE_QUERY_KEY = ["profile", "me"] as const;
 
 /**
  * A profile counts as "set up" once the core identity fields used for
- * verification and payouts are present. We require an NRC **or** a passport,
+ * P2P trades and withdrawals are present. We require an NRC **or** a passport,
  * not both.
  */
 export function isProfileComplete(p: ApiProfile | null | undefined): boolean {
@@ -55,25 +51,4 @@ export function useProfileStatus(): ProfileStatus {
     isComplete,
     needsSetup: isLoggedIn && q.isFetched && !isComplete,
   };
-}
-
-/**
- * Gate for pages/actions that require a completed profile. When the profile
- * still needs setup, it bounces the user to the profile settings page with a
- * heads-up toast. Returns `needsSetup` so callers can also skip rendering.
- */
-export function useRequireProfile(): boolean {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { needsSetup } = useProfileStatus();
-
-  useEffect(() => {
-    if (!needsSetup) return;
-    toast.warning(t("settings.profileSetupTitle"), {
-      description: t("settings.profileSetupDesc"),
-    });
-    navigate({ to: "/settings/profile" });
-  }, [needsSetup, navigate, t]);
-
-  return needsSetup;
 }

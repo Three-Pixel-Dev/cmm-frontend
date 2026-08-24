@@ -3,6 +3,7 @@ export type ApiBettingHistory = {
   user_id: string;
   user?: {
     id: string;
+    name?: string;
     fullname: string;
     email: string;
   };

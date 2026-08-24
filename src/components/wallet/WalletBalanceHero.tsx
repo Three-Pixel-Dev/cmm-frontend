@@ -1,13 +1,10 @@
-import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
-import { Banknote, Gamepad2, Loader2 } from "lucide-react";
+import { Coins, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { fmtKyat, fmtVKyat } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { fmtKyat } from "@/lib/format";
 
 type WalletBalanceHeroProps = {
   cash: number;
-  playBalance: number;
   isLoading?: boolean;
   onDeposit?: () => void;
   onWithdraw?: () => void;
@@ -15,7 +12,6 @@ type WalletBalanceHeroProps = {
 
 export function WalletBalanceHero({
   cash,
-  playBalance,
   isLoading,
   onDeposit,
   onWithdraw,
@@ -23,15 +19,17 @@ export function WalletBalanceHero({
   const { t } = useTranslation();
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <BalanceCard
-        label={t("wallet.cash")}
-        hint={t("wallet.cashHint")}
-        value={isLoading ? "—" : fmtKyat(cash)}
-        icon={Banknote}
-        accent="emerald"
-        actions={
-          !isLoading && (
+    <div className="hud-panel relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/12 via-card to-card p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            {t("wallet.cash")}
+          </p>
+          <p className="mt-2 font-display text-3xl font-bold tabular-nums tracking-wide sm:text-4xl">
+            {isLoading ? "—" : fmtKyat(cash)}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{t("wallet.cashHint")}</p>
+          {!isLoading && onDeposit && onWithdraw ? (
             <div className="mt-4 flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -53,75 +51,13 @@ export function WalletBalanceHero({
                 {t("wallet.funding.withdrawCta")}
               </Button>
             </div>
-          )
-        }
-      />
-      <BalanceCard
-        label={t("wallet.playBalance")}
-        hint={t("wallet.playHint")}
-        value={isLoading ? "—" : fmtVKyat(playBalance)}
-        icon={Gamepad2}
-        accent="violet"
-      />
-    </div>
-  );
-}
-
-function BalanceCard({
-  label,
-  hint,
-  value,
-  icon: Icon,
-  accent,
-  actions,
-}: {
-  label: string;
-  hint: string;
-  value: string;
-  icon: ComponentType<{ className?: string }>;
-  accent: "emerald" | "violet";
-  actions?: React.ReactNode;
-}) {
-  const accentStyles = {
-    emerald: {
-      border: "border-emerald-500/25",
-      bg: "from-emerald-500/12 via-card to-card",
-      icon: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-    },
-    violet: {
-      border: "border-violet-500/25",
-      bg: "from-violet-500/12 via-card to-card",
-      icon: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
-    },
-  }[accent];
-
-  return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 sm:p-6",
-        accentStyles.border,
-        accentStyles.bg,
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {label}
-          </p>
-          <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">{value}</p>
-          <p className="mt-2 text-xs text-muted-foreground">{hint}</p>
-          {actions}
+          ) : null}
         </div>
-        <div
-          className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-            accentStyles.icon,
-          )}
-        >
-          <Icon className="h-5 w-5" aria-hidden />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+          <Coins className="h-5 w-5" aria-hidden />
         </div>
       </div>
-      {value === "—" && (
+      {isLoading && (
         <Loader2
           className="absolute bottom-4 right-4 h-4 w-4 animate-spin text-muted-foreground"
           aria-hidden

@@ -4,7 +4,7 @@ import { Check, Coins, Copy, Loader2, QrCode, UploadCloud, Users, X } from "luci
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PlayerAvatar } from "@/components/player/PlayerAvatar";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,8 @@ import {
   useRoomPreview,
 } from "@/hooks/useRooms";
 import { useAuth } from "@/store/useAuth";
-import { joinFeeCopy, joinModeLabel } from "@/lib/rooms/copy";
+import { isPaidJoin, joinFeeCopy, joinModeLabel } from "@/lib/rooms/copy";
+import { fmtKyat } from "@/lib/format";
 import { getShareOrigin } from "@/lib/app-url";
 import { uploadFile } from "@/lib/api/files";
 import type { RoomMember } from "@/lib/api/rooms";
@@ -58,6 +59,7 @@ function RoomLobbyPage() {
   const navigate = useNavigate();
   const hydrated = useHydrated();
   const isLoggedIn = useAuth((s) => s.isLoggedIn());
+  const isHost = useAuth((s) => s.isHost());
   const previewQ = useRoomPreview(inviteCode);
   const roomQ = useRoom(previewQ.data?.id, hydrated && isLoggedIn && !!previewQ.data?.id);
   const membersQ = useRoomMembers(roomQ.data?.id, !!roomQ.data?.is_member);
@@ -82,6 +84,10 @@ function RoomLobbyPage() {
   };
 
   const onJoinClick = () => {
+    if (isHost) {
+      toast.error("Host accounts run tables and cannot join as a player.");
+      return;
+    }
     if (!isLoggedIn) {
       void navigate({ to: "/login", search: { redirect: `/r/${inviteCode}` } });
       return;
@@ -116,11 +122,11 @@ function RoomLobbyPage() {
   return (
     <main className="game-shell">
       <div className="game-felt mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-6">
-        <section className="rounded-3xl border border-white/10 bg-black/40 p-6 text-center shadow-[0_0_80px_rgba(0,0,0,0.35)] sm:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+        <section className="hud-panel rounded-3xl p-6 text-center sm:p-10">
+          <p className="font-display text-xs font-semibold uppercase tracking-[0.28em] text-primary">
             Table lobby
           </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">{preview.name}</h1>
+          <h1 className="mt-3 text-3xl font-bold tracking-wide sm:text-5xl">{preview.name}</h1>
           <p className="invite-code-display mt-6 font-mono text-4xl tracking-[0.35em] text-primary sm:text-5xl">
             {preview.invite_code}
           </p>
@@ -162,24 +168,28 @@ function RoomLobbyPage() {
                   Sit at the table
                 </Link>
               </Button>
-            ) : (
+            ) : isHost ? null : (
               <Button onClick={onJoinClick}>
-                {preview.join_payment_mode === "required"
-                  ? "Pay and join"
-                  : preview.join_payment_mode === "after"
-                    ? "Join on tab"
-                    : "Join table"}
+                {isPaidJoin(preview.join_payment_mode) ? "Join on tab" : "Join table"}
               </Button>
             )}
           </div>
 
           {!isLoggedIn ? (
             <p className="mt-4 text-xs text-muted-foreground">You need a player account to join.</p>
+          ) : isHost && !isMember ? (
+            <p className="mt-4 text-xs text-muted-foreground">
+              Host accounts run their own tables. Open one from{" "}
+              <Link to="/" className="text-primary hover:underline">
+                Rooms
+              </Link>
+              .
+            </p>
           ) : null}
         </section>
 
         {isMember ? (
-          <section className="rounded-2xl border border-white/10 bg-black/30 p-5">
+          <section className="hud-panel rounded-2xl p-5">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-sm font-semibold">
                 <Users className="h-4 w-4 text-primary" />
@@ -190,34 +200,36 @@ function RoomLobbyPage() {
               {(membersQ.data ?? []).map((m) => (
                 <li
                   key={m.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-black/40 p-3 text-sm transition-colors hover:border-white/15"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-primary/10 bg-elevated/60 p-3 text-sm transition-colors hover:border-primary/30"
                 >
                   <div className="flex items-center gap-2.5 overflow-hidden">
-                    <Avatar className="h-8 w-8 border border-white/10">
-                      <AvatarImage src={m.user_avatar} alt={m.user_name || "Player"} />
-                      <AvatarFallback className="bg-primary/20 text-[11px] font-bold text-primary">
-                        {(m.user_name || "P").slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <PlayerAvatar
+                      src={m.user_avatar}
+                      name={m.user_name || "Player"}
+                      className="h-8 w-8"
+                    />
                     <div className="flex flex-col truncate">
                       <div className="flex items-center gap-1.5 truncate">
                         <span className="truncate font-semibold text-xs text-foreground">
                           {m.user_name || m.user_id.slice(0, 8)}
                         </span>
                         {m.role === "admin" ? (
-                          <Badge variant="outline" className="border-amber-400/40 bg-amber-400/10 text-[10px] text-amber-400 py-0 px-1">
+                          <Badge
+                            variant="outline"
+                            className="border-amber-400/40 bg-amber-400/10 text-[10px] text-amber-400 py-0 px-1"
+                          >
                             Host
                           </Badge>
                         ) : null}
                       </div>
                       <span className="text-[11px] text-muted-foreground">
-                        {m.join_payment_status}
+                        {fmtKyat(m.chip_balance ?? 0)} chips · {m.join_payment_status}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    {m.payment_qr_url || m.payment_account_number ? (
+                    {m.role === "admin" ? null : m.payment_qr_url || m.payment_account_number ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -326,15 +338,13 @@ function JoinTableDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/15 bg-neutral-950/95 p-6 text-foreground backdrop-blur-xl sm:max-w-md">
+      <DialogContent className="hud-panel p-6 text-foreground sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">Join Table: {preview.name}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            {preview.join_payment_mode === "required"
-              ? `Table fee: ${preview.join_fee.toLocaleString()} Ks (Required)`
-              : preview.join_payment_mode === "after"
-                ? `Table fee: ${preview.join_fee.toLocaleString()} Ks (Pay after on Tab)`
-                : "Free entry table"}
+            {isPaidJoin(preview.join_payment_mode)
+              ? `Table fee: ${preview.join_fee.toLocaleString()} Ks — pay the host via QR`
+              : "Free entry table"}
           </DialogDescription>
         </DialogHeader>
 
@@ -345,7 +355,8 @@ function JoinTableDialog({
               <span>Decentralized Payout QR (Optional)</span>
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              Provide your MMQR, KBZPay, or WavePay QR image so the room host can easily send your payouts and winnings. You can also leave this blank and add it later.
+              Provide your MMQR, KBZPay, or WavePay QR image so the room host can easily send your
+              payouts and winnings. You can also leave this blank and add it later.
             </p>
           </div>
 
@@ -370,7 +381,11 @@ function JoinTableDialog({
             <Label className="text-xs font-semibold">QR Code Image</Label>
             {qrUrl ? (
               <div className="flex items-center justify-between rounded-lg border border-white/15 bg-black/50 p-2">
-                <img src={qrUrl} alt="QR Preview" className="h-12 w-12 rounded object-contain bg-white p-0.5" />
+                <img
+                  src={qrUrl}
+                  alt="QR Preview"
+                  className="h-12 w-12 rounded object-contain bg-white p-0.5"
+                />
                 <span className="text-xs text-emerald-400 font-medium">QR Uploaded</span>
                 <Button
                   type="button"
@@ -501,11 +516,13 @@ function AddChipsDialog({ roomId, userId }: { roomId: string; userId: string }) 
         <Coins className="h-3.5 w-3.5" />
         <span className="sr-only">Add Chips</span>
       </Button>
-      <DialogContent className="sm:max-w-xs border-white/15 bg-neutral-950/95 text-foreground backdrop-blur-xl">
+      <DialogContent className="hud-panel sm:max-w-xs text-foreground">
         <form onSubmit={onSubmit}>
           <DialogHeader>
             <DialogTitle>Add Play Chips</DialogTitle>
-            <DialogDescription>Grant virtual chips to this player.</DialogDescription>
+            <DialogDescription>
+              Grant chips for this table only. They stay here when the player leaves other rooms.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

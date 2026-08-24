@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Share2, Clock, Trophy } from "lucide-react";
+import { Share2, Clock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { MarketGroupDetail, MarketItemDetail } from "@/lib/markets/types";
@@ -13,13 +12,11 @@ import { isResolved, getOutcome, timeRemaining } from "@/data/markets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/store/useAuth";
-import { useBetMode } from "@/store/useBetMode";
 import { usePortfolio } from "@/store/usePortfolio";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useWallet, parseWalletAmount } from "@/hooks/useWallet";
 import { usePlaceBet } from "@/hooks/usePlaceBet";
 import { newBetIdempotencyKey } from "@/lib/api/betIdempotency";
-import { useProfileStatus } from "@/hooks/useProfile";
 import { fmtKyat, fmtKyatCompact, fmtDate, fmtShares } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import borkenImage from "@/assets/broken-image.jpg";
@@ -145,7 +142,6 @@ export function MarketDetail({ detail, focusItemId, initialSide = "yes" }: Props
   const { group, items } = detail;
   const { t, i18n } = useTranslation();
   const lang = i18n.language as "en" | "my";
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const user = useAuth((s) => s.user);
@@ -154,10 +150,8 @@ export function MarketDetail({ detail, focusItemId, initialSide = "yes" }: Props
   const showAuth = hydrated && isLoggedIn;
 
   const { data: wallet } = useWallet(showAuth ? user?.id : undefined);
-  const { needsSetup: needsProfile } = useProfileStatus();
 
   const placeBet = usePlaceBet();
-  const betMode = useBetMode((s) => s.mode);
   const [selectedId, setSelectedId] = useState(focusItemId);
   const [side, setSide] = useState<"yes" | "no">(initialSide);
   const [amount, setAmount] = useState("");
@@ -177,8 +171,7 @@ export function MarketDetail({ detail, focusItemId, initialSide = "yes" }: Props
     setAmount(String(sharePrice));
   }, [selected?.id, sharePrice]);
 
-  const isVirtualMode = betMode === "virtual";
-  const balance = parseWalletAmount(isVirtualMode ? wallet?.virtual_amount : wallet?.amount);
+  const balance = parseWalletAmount(wallet?.amount);
   const yesPrice = selected ? selected.yesPrice : 0.5;
   const noPrice = 1 - yesPrice;
   const sidePrice = side === "yes" ? yesPrice : noPrice;
@@ -219,15 +212,13 @@ export function MarketDetail({ detail, focusItemId, initialSide = "yes" }: Props
   const yesShares = poolPricing?.effectiveYesShares ?? 0;
   const noShares = poolPricing?.effectiveNoShares ?? 0;
 
-  const canPlaceReal =
+  const canPlace =
     !resolved &&
     showAuth &&
     shareCount >= 1 &&
     stake > 0 &&
     stake <= balance &&
     !placeBet.isPending;
-  const canPlaceVirtual = !resolved && showAuth && shareCount >= 1 && stake > 0 && stake <= balance;
-  const canPlace = isVirtualMode ? canPlaceVirtual : canPlaceReal;
 
   const handleShare = () => {
     const url = window.location.href;
@@ -241,37 +232,6 @@ export function MarketDetail({ detail, focusItemId, initialSide = "yes" }: Props
   const handlePlace = () => {
     if (!showAuth) {
       toast.error(t("market.loginToBet"));
-      return;
-    }
-    if (isVirtualMode) {
-      //   const result = placeOrder({
-      //     marketId: selected.id,
-      //     marketTitleEn: selected.title.en,
-      //     marketTitleMy: selected.title.my,
-      //     side,
-      //     price: yesPrice,
-      //     amount: stake,
-      //   });
-
-      //   if (!result.ok) {
-      //     toast.error(
-      //       result.reason === "insufficient" ? t("market.insufficientFunds") : t("market.sharesMin"),
-      //     );
-      //     return;
-      //   }
-
-      //   toast.success(t("market.virtualOrderPlaced"), {
-      //     description: `${selected.title[lang]} · ${side === "yes" ? t("market.yes") : t("market.no")}`,
-      //   });
-      //   setAmount(String(sharePrice));
-      return;
-    }
-
-    if (needsProfile) {
-      toast.warning(t("settings.profileSetupTitle"), {
-        description: t("settings.profileSetupDesc"),
-      });
-      navigate({ to: "/settings/profile" });
       return;
     }
     if (shareCount < 1) {
@@ -474,24 +434,7 @@ export function MarketDetail({ detail, focusItemId, initialSide = "yes" }: Props
 
       <aside className="lg:sticky lg:top-20 self-start w-full space-y-3">
         <p className="text-xs text-muted-foreground line-clamp-2 px-1">{selected.title[lang]}</p>
-        <div
-          className={cn(
-            "rounded-xl border border-border/60 bg-card p-4 shadow-lg",
-            isVirtualMode && "border-primary/40 bg-primary/5",
-          )}
-        >
-          {isVirtualMode && (
-            <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                <Trophy className="h-4 w-4" aria-hidden />
-                {t("market.virtualModeActive")}
-              </div>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {t("market.virtualModeBettingDesc")}
-              </p>
-            </div>
-          )}
-
+        <div className="rounded-xl border border-border/60 bg-card p-4 shadow-lg">
           <div className="my-3 grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -592,15 +535,11 @@ export function MarketDetail({ detail, focusItemId, initialSide = "yes" }: Props
                 ? t("market.placing")
                 : !showAuth
                   ? t("market.loginToBet")
-                  : isVirtualMode
-                    ? t("market.placeVirtualOrder")
-                    : t("market.placeOrder")}
+                  : t("market.placeOrder")}
           </Button>
 
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            {showAuth
-              ? `${isVirtualMode ? t("wallet.playBalance") : t("market.balance")}: ${fmtKyat(balance)}`
-              : t("market.loginToBet")}
+            {showAuth ? `${t("market.balance")}: ${fmtKyat(balance)}` : t("market.loginToBet")}
           </p>
         </div>
 

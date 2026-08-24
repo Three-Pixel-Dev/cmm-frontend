@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { betsApi } from "@/lib/api/bets";
 import { marketItemsApi } from "@/lib/api/markets";
-import { WALLET_QUERY_KEY } from "@/lib/api/wallet";
-import { ROOM_MARKETS_KEY, ROOM_TABS_KEY } from "@/hooks/useRooms";
+import type { RoomMember } from "@/lib/api/rooms";
+import { ROOM_MARKETS_KEY, ROOM_MEMBERS_KEY, ROOM_TABS_KEY } from "@/hooks/useRooms";
 import type { ApiMarketGroup, ApiMarketItem } from "@/types/market-api";
 import { fmtKyat } from "@/lib/format";
 import { stakeModeLabel } from "@/lib/rooms/copy";
 import { cn } from "@/lib/utils";
+import { RoundDetailsDialog } from "@/components/game/RoundDetailsDialog";
 
 function firstOpenItem(group: ApiMarketGroup): ApiMarketItem | undefined {
   return (
@@ -23,16 +24,17 @@ export function RoundCard({
   group,
   roomId,
   isHost,
-  isFree,
+  members = [],
 }: {
   group: ApiMarketGroup;
   roomId: string;
   isHost: boolean;
-  isFree?: boolean;
+  members?: RoomMember[];
 }) {
   const qc = useQueryClient();
   const item = firstOpenItem(group);
   const [shares, setShares] = useState("1");
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const options = item?.options ?? [];
 
   const betM = useMutation({
@@ -40,14 +42,14 @@ export function RoundCard({
       betsApi.place({
         market_item_id: item!.id,
         shares: Math.max(1, Number.parseInt(shares, 10) || 1),
-        ledger: isFree ? "virtual" : "real",
+        ledger: "real",
         idempotency_key: crypto.randomUUID(),
         ...payload,
       }),
     onSuccess: () => {
       toast.success("Bet locked in.");
       void qc.invalidateQueries({ queryKey: [ROOM_MARKETS_KEY, roomId] });
-      void qc.invalidateQueries({ queryKey: [WALLET_QUERY_KEY] });
+      void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, roomId] });
       void qc.invalidateQueries({ queryKey: [ROOM_TABS_KEY, roomId] });
     },
     onError: (err: Error) => toast.error(err.message),
@@ -59,6 +61,7 @@ export function RoundCard({
     onSuccess: () => {
       toast.success("Round resolved — settling.");
       void qc.invalidateQueries({ queryKey: [ROOM_MARKETS_KEY, roomId] });
+      void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, roomId] });
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -68,6 +71,7 @@ export function RoundCard({
     onSuccess: () => {
       toast.success("Round cancelled.");
       void qc.invalidateQueries({ queryKey: [ROOM_MARKETS_KEY, roomId] });
+      void qc.invalidateQueries({ queryKey: [ROOM_MEMBERS_KEY, roomId] });
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -83,15 +87,27 @@ export function RoundCard({
   const cost = shareCount * item.one_share_price;
 
   return (
-    <article className="round-card space-y-4 rounded-2xl border border-white/10 bg-black/40 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+    <article className="hud-panel round-card space-y-4 rounded-2xl p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-lg font-semibold leading-snug">{item.title_en || group.title_en}</p>
+          <p className="font-display text-lg font-semibold leading-snug tracking-wide">
+            {item.title_en || group.title_en}
+          </p>
           <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
             {stakeModeLabel(item.stake_mode)} · {fmtKyat(item.one_share_price)} / share ·{" "}
             {item.status}
           </p>
         </div>
+        {isHost ? (
+          <Button
+            type="button"
+            size="sm"
+            variant={open ? "outline" : "default"}
+            onClick={() => setDetailsOpen(true)}
+          >
+            Details
+          </Button>
+        ) : null}
       </div>
 
       {open ? (
@@ -110,7 +126,7 @@ export function RoundCard({
               <>
                 <Button
                   type="button"
-                  className="h-12 bg-yes font-bold text-yes-foreground hover:bg-yes/90"
+                  className="h-14 bg-yes font-display text-lg font-bold tracking-wide text-yes-foreground hover:bg-yes/90"
                   disabled={betM.isPending}
                   onClick={() => betM.mutate({ side: "yes" })}
                 >
@@ -118,7 +134,7 @@ export function RoundCard({
                 </Button>
                 <Button
                   type="button"
-                  className="h-12 bg-no font-bold text-no-foreground hover:bg-no/90"
+                  className="h-14 bg-no font-display text-lg font-bold tracking-wide text-no-foreground hover:bg-no/90"
                   disabled={betM.isPending}
                   onClick={() => betM.mutate({ side: "no" })}
                 >
@@ -131,7 +147,7 @@ export function RoundCard({
                   key={opt.id}
                   type="button"
                   variant="secondary"
-                  className="h-12 font-semibold"
+                  className="h-14 font-display text-base font-semibold tracking-wide"
                   disabled={betM.isPending}
                   onClick={() => betM.mutate({ option_id: opt.id })}
                 >
@@ -148,7 +164,7 @@ export function RoundCard({
       )}
 
       {isHost && open ? (
-        <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
+        <div className="flex flex-wrap gap-2 border-t border-primary/15 pt-3">
           {binaryYesNo ? (
             <>
               <Button
@@ -195,6 +211,15 @@ export function RoundCard({
             Cancel
           </Button>
         </div>
+      ) : null}
+
+      {isHost ? (
+        <RoundDetailsDialog
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          item={item}
+          members={members}
+        />
       ) : null}
     </article>
   );

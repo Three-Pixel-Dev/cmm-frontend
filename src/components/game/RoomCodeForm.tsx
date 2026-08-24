@@ -34,8 +34,8 @@ export function RoomCodeForm({
         spellCheck={false}
         className={
           size === "lg"
-            ? "h-14 flex-1 border-primary/30 bg-black/40 font-mono text-lg tracking-[0.28em] uppercase"
-            : "h-9 flex-1 border-primary/20 bg-black/30 font-mono text-xs tracking-[0.2em] uppercase"
+            ? "h-14 flex-1 border-primary/35 bg-elevated/80 font-display font-semibold text-lg tracking-[0.28em] uppercase"
+            : "h-9 flex-1 border-primary/25 bg-elevated/80 font-display font-semibold text-xs tracking-[0.2em] uppercase"
         }
         aria-label="Room invite code"
       />

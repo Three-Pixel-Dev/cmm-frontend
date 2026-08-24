@@ -8,12 +8,12 @@ export function RoomListCard({ room }: { room: Room }) {
     <Link
       to="/r/$inviteCode"
       params={{ inviteCode: room.invite_code }}
-      className="game-room-tile group flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/35 p-4 transition hover:border-primary/50 hover:bg-black/50"
+      className="game-room-tile group flex flex-col gap-3 rounded-2xl p-4 transition"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-base font-semibold tracking-tight">{room.name}</p>
-          <p className="mt-1 font-mono text-xs tracking-[0.22em] text-primary">
+          <p className="truncate font-display text-base font-semibold tracking-wide">{room.name}</p>
+          <p className="invite-code-display mt-1 font-mono text-xs tracking-[0.22em] text-primary">
             {room.invite_code}
           </p>
         </div>

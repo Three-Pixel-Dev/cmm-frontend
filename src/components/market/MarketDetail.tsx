@@ -5,18 +5,16 @@ import {
   useMarketGroupDetail,
 } from "@/hooks/useMarketGroupDetail";
 import { usePlaceBet } from "@/hooks/usePlaceBet";
-import { useProfileStatus } from "@/hooks/useProfile";
 import { parseWalletAmount, useWallet } from "@/hooks/useWallet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/useAuth";
-import { useBetMode } from "@/store/useBetMode";
 import { useQueryClient } from "@tanstack/react-query";
-import { useHydrated, useNavigate } from "@tanstack/react-router";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import borkenImage from "@/assets/broken-image.jpg";
 import { fmtDate, fmtLedger, fmtShares, type LedgerKind } from "@/lib/format";
-import { Clock, Share2, Trophy } from "lucide-react";
+import { Clock, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { ApiMarketPool } from "@/types/market-api";
 import { poolPricingInfo } from "@/lib/markets/map";
@@ -260,7 +258,6 @@ export const MarketDetail = ({
 }: Props) => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as "en" | "my";
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: polledDetail, dataUpdatedAt } = useMarketGroupDetail(initialDetail.id, {
@@ -274,11 +271,8 @@ export const MarketDetail = ({
 
   const showAuth = hydrated && isLoggedIn;
 
-  const { needsSetup: needsProfile } = useProfileStatus();
   const { data: wallet } = useWallet(user?.id);
-  const betMode = useBetMode((s) => s.mode);
-  const isVirtualMode = betMode === "virtual";
-  const ledger: LedgerKind = isVirtualMode ? "virtual" : "real";
+  const ledger: LedgerKind = "real";
 
   const [selectedId, setSelectedId] = useState(focusItemId);
   const [selectedOptionId, setSelectedOptionId] = useState("");
@@ -305,14 +299,9 @@ export const MarketDetail = ({
     setSelectedOptionId(resolveInitialOptionId(opts, initialSide, initialOptionId));
   }, [selectedItem?.id, ledger, lang, initialSide, initialOptionId]);
 
-  const balance =
-    parseWalletAmount(betMode === "real" ? wallet?.amount : wallet?.virtual_amount) || 0;
+  const balance = parseWalletAmount(wallet?.amount) || 0;
   const stake = shares > 0 ? shares * (selectedItem?.one_share_price ?? 0) : 0;
-  const activePool = selectedItem
-    ? betMode === "real"
-      ? selectedItem.real_pool
-      : selectedItem.virtual_pool
-    : null;
+  const activePool = selectedItem ? selectedItem.real_pool : null;
 
   const profit = selectedItem
     ? calculateProfitRatio(
@@ -353,11 +342,7 @@ export const MarketDetail = ({
     setSelectedId(focusItemId);
   }, [focusItemId]);
 
-  const pool = selectedItem
-    ? betMode === "real"
-      ? selectedItem.real_pool
-      : selectedItem.virtual_pool
-    : null;
+  const pool = selectedItem ? selectedItem.real_pool : null;
   const isBinaryAnswers = answerOptions.length === 2;
   const selectedAnswer = answerOptions.find((o) => o.id === activeOptionId);
   const totalActiveShares = totalOptionEffectiveShares(answerOptions, pool);
@@ -401,14 +386,6 @@ export const MarketDetail = ({
       toast.error(t("market.loginToBet"));
       return;
     }
-
-    if (needsProfile) {
-      toast.warning(t("settings.profileSetupTitle"), {
-        description: t("settings.profileSetupDesc"),
-      });
-      navigate({ to: "/settings/profile" });
-      return;
-    }
     if (shares < 1) {
       toast.error(t("market.sharesMin"));
       return;
@@ -423,39 +400,6 @@ export const MarketDetail = ({
     }
 
     const idempotency_key = newBetIdempotencyKey();
-
-    if (isVirtualMode) {
-      placeBet.mutate(
-        { ...placeBetPayload("virtual"), idempotency_key },
-        {
-          onSuccess: (result) => {
-            if (result.live) {
-              applyMarketLiveSnapshotToCache(queryClient, result.live);
-            }
-            refreshVolumeHistory();
-            toast.success(t("market.orderPlaced"), {
-              description: orderSuccessDescription(),
-            });
-            setShares(1);
-          },
-          onError: (err) => {
-            const msg = err.message.toLowerCase();
-            if (msg.includes("insufficient")) {
-              toast.error(t("market.insufficientFunds"));
-            } else if (
-              msg.includes("overcrowded") ||
-              msg.includes("recover stake") ||
-              msg.includes("option_id")
-            ) {
-              toast.error(t("market.sideOvercrowded"));
-            } else {
-              toast.error(err.message);
-            }
-          },
-        },
-      );
-      return;
-    }
 
     placeBet.mutate(
       { ...placeBetPayload("real"), idempotency_key },
@@ -557,12 +501,8 @@ export const MarketDetail = ({
                   <span>
                     {fmtLedger(
                       realPoolMoney(
-                        getItemAnswerOptions(
-                          selectedItem,
-                          betMode === "real" ? "real" : "virtual",
-                          lang,
-                        ),
-                        betMode === "real" ? selectedItem.real_pool : selectedItem.virtual_pool,
+                        getItemAnswerOptions(selectedItem, "real", lang),
+                        selectedItem.real_pool,
                         selectedItem.one_share_price,
                       ),
                       ledger,
@@ -667,24 +607,7 @@ export const MarketDetail = ({
           <p className="text-xs text-muted-foreground line-clamp-2 px-1">
             {selectedItem.title[lang]}
           </p>
-          <div
-            className={cn(
-              "rounded-xl border border-border/60 bg-card p-4 shadow-lg",
-              isVirtualMode && "border-primary/40 bg-primary/5",
-            )}
-          >
-            {isVirtualMode && (
-              <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                  <Trophy className="h-4 w-4" aria-hidden />
-                  {t("market.virtualModeActive")}
-                </div>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {t("market.virtualModeBettingDesc")}
-                </p>
-              </div>
-            )}
-
+          <div className="rounded-xl border border-border/60 bg-card p-4 shadow-lg">
             <p className="text-xs text-muted-foreground mb-1">{t("market.selectAnswer")}</p>
             <MarketOptionPicker
               options={answerOptions}
@@ -797,14 +720,12 @@ export const MarketDetail = ({
                   ? t("market.placing")
                   : !showAuth
                     ? t("market.loginToBet")
-                    : isVirtualMode
-                      ? t("market.placeVirtualOrder")
-                      : t("market.placeOrder")}
+                    : t("market.placeOrder")}
             </Button>
 
             <p className="mt-2 text-center text-xs text-muted-foreground">
               {showAuth
-                ? `${isVirtualMode ? t("wallet.playBalance") : t("market.balance")}: ${fmtLedger(balance, ledger)}`
+                ? `${t("market.balance")}: ${fmtLedger(balance, ledger)}`
                 : t("market.loginToBet")}
             </p>
           </div>
