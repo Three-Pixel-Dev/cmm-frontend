@@ -44,6 +44,15 @@ export const marketsApi = {
 export const marketItemsApi = {
   get: (id: string) =>
     http.get<ApiEnvelope<ApiMarketItem>>(`/market-items/${id}`).then((r) => unwrap(r.data)),
+  update: (
+    id: string,
+    body: {
+      title_en?: string;
+      resolution_criteria_en?: string;
+      options?: Array<{ id?: string; title_en: string; title_my?: string; sort_order?: number }>;
+    },
+  ) =>
+    http.patch<ApiEnvelope<ApiMarketItem>>(`/market-items/${id}`, body).then((r) => unwrap(r.data)),
   resolve: (id: string, body: { outcome?: "yes" | "no" | "void"; winning_option_id?: string }) =>
     http
       .post<ApiEnvelope<ApiMarketItem>>(`/market-items/resolve/${id}`, body)

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Edit2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { fmtKyat } from "@/lib/format";
 import { stakeModeLabel } from "@/lib/rooms/copy";
 import { cn } from "@/lib/utils";
 import { RoundDetailsDialog } from "@/components/game/RoundDetailsDialog";
+import { EditQuestionDialog } from "@/components/game/EditQuestionDialog";
 
 function firstOpenItem(group: ApiMarketGroup): ApiMarketItem | undefined {
   return (
@@ -35,6 +36,7 @@ export function RoundCard({
   const item = firstOpenItem(group);
   const [shares, setShares] = useState("1");
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const options = item?.options ?? [];
 
   const betM = useMutation({
@@ -99,14 +101,29 @@ export function RoundCard({
           </p>
         </div>
         {isHost ? (
-          <Button
-            type="button"
-            size="sm"
-            variant={open ? "outline" : "default"}
-            onClick={() => setDetailsOpen(true)}
-          >
-            Details
-          </Button>
+          <div className="flex items-center gap-2">
+            {open ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5 border-primary/30 bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/20"
+                onClick={() => setEditOpen(true)}
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+                <span>Edit</span>
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              size="sm"
+              variant={open ? "outline" : "default"}
+              onClick={() => setDetailsOpen(true)}
+              className="h-8 text-xs"
+            >
+              Details
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -214,12 +231,20 @@ export function RoundCard({
       ) : null}
 
       {isHost ? (
-        <RoundDetailsDialog
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          item={item}
-          members={members}
-        />
+        <>
+          <RoundDetailsDialog
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+            item={item}
+            members={members}
+          />
+          <EditQuestionDialog
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            item={item}
+            roomId={roomId}
+          />
+        </>
       ) : null}
     </article>
   );
