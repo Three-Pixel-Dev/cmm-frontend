@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,32 @@ export function CreateRoomForm() {
   const [price, setPrice] = useState("100");
   const [hours, setHours] = useState("24");
   const [stakeMode, setStakeMode] = useState<"prepaid" | "pay_after">("prepaid");
+  const [optionType, setOptionType] = useState<"yes_no" | "three_way" | "custom">("yes_no");
+  const [customOptions, setCustomOptions] = useState<string[]>(["Option 1", "Option 2"]);
+
+  const handleAddOption = () => {
+    if (customOptions.length >= 10) {
+      toast.error("Maximum 10 options allowed.");
+      return;
+    }
+    setCustomOptions((prev) => [...prev, `Option ${prev.length + 1}`]);
+  };
+
+  const handleRemoveOption = (index: number) => {
+    if (customOptions.length <= 2) {
+      toast.error("At least 2 options are required.");
+      return;
+    }
+    setCustomOptions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleOptionChange = (index: number, val: string) => {
+    setCustomOptions((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +76,19 @@ export function CreateRoomForm() {
       return;
     }
 
+    let finalOptions: string[] = [];
+    if (optionType === "yes_no") {
+      finalOptions = ["Yes", "No"];
+    } else if (optionType === "three_way") {
+      finalOptions = ["Team 1", "Draw", "Team 2"];
+    } else {
+      finalOptions = customOptions.map((o) => o.trim()).filter(Boolean);
+      if (finalOptions.length < 2) {
+        toast.error("Please enter at least 2 non-empty options.");
+        return;
+      }
+    }
+
     create.mutate(
       {
         name: name.trim(),
@@ -60,7 +99,7 @@ export function CreateRoomForm() {
         one_share_price: oneSharePrice,
         close_hours: Number.isFinite(closeHours) && closeHours > 0 ? closeHours : 24,
         stake_mode: stakeMode,
-        options: ["Yes", "No"],
+        options: finalOptions,
       },
       {
         onSuccess: (room) => {
@@ -225,6 +264,79 @@ export function CreateRoomForm() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Outcome Options */}
+        <div className="space-y-2">
+          <Label>Outcome Options</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: "yes_no", label: "Yes / No" },
+              { id: "three_way", label: "3-Way Sports" },
+              { id: "custom", label: "Custom Multi" },
+            ].map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setOptionType(t.id as any)}
+                className={
+                  optionType === t.id
+                    ? "hud-choice hud-choice-active rounded-xl px-2 py-2 text-xs font-bold"
+                    : "hud-choice rounded-xl px-2 py-2 text-xs text-muted-foreground"
+                }
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {optionType === "custom" ? (
+            <div className="space-y-2 rounded-xl border border-primary/20 bg-elevated/40 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Choices ({customOptions.length}/10)
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-7 gap-1 text-xs"
+                  onClick={handleAddOption}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Option
+                </Button>
+              </div>
+
+              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                {customOptions.map((opt, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="w-5 font-mono text-xs text-muted-foreground">
+                      #{idx + 1}
+                    </span>
+                    <Input
+                      value={opt}
+                      onChange={(e) => handleOptionChange(idx, e.target.value)}
+                      placeholder={`Option ${idx + 1}`}
+                      className="h-8 text-xs"
+                      maxLength={64}
+                    />
+                    {customOptions.length > 2 ? (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        onClick={() => handleRemoveOption(idx)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 

@@ -138,7 +138,7 @@ export function RoundCard({
             />
             <span className="text-sm text-muted-foreground">{fmtKyat(cost)}</span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={cn("grid gap-2", options.length > 2 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2")}>
             {binaryYesNo ? (
               <>
                 <Button
@@ -164,20 +164,27 @@ export function RoundCard({
                   key={opt.id}
                   type="button"
                   variant="secondary"
-                  className="h-14 font-display text-base font-semibold tracking-wide"
+                  className="h-14 flex-col gap-0.5 border border-white/10 font-display text-sm font-semibold tracking-wide hover:border-primary/50 hover:bg-primary/15"
                   disabled={betM.isPending}
                   onClick={() => betM.mutate({ option_id: opt.id })}
                 >
-                  {opt.title_en}
+                  <span className="truncate max-w-full">{opt.title_en}</span>
                 </Button>
               ))
             )}
           </div>
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          {item.outcome ? `Outcome: ${item.outcome}` : "This round is closed."}
-        </p>
+        <div className="rounded-xl border border-primary/20 bg-elevated/40 p-4">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Settlement Status</p>
+          <p className="mt-1 font-display text-base font-bold text-emerald-400">
+            {options.find((o) => o.id === item.winning_option_id)
+              ? `🏆 Winner: ${options.find((o) => o.id === item.winning_option_id)?.title_en}`
+              : item.outcome
+                ? `Outcome: ${item.outcome.toUpperCase()}`
+                : "This round is closed."}
+          </p>
+        </div>
       )}
 
       {isHost && open ? (
