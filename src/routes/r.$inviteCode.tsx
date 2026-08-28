@@ -72,11 +72,17 @@ function RoomLobbyPage() {
   const isMember = !!room?.is_member;
   const shareUrl = `${getShareOrigin()}/r/${inviteCode}`;
 
+  const memberCount = preview?.member_count ?? members.length;
+  const maxSeats = preview?.max_participants || 50;
+  const availableSlots = preview?.available_slots ?? Math.max(0, maxSeats - memberCount);
+  const isFull = preview?.is_full ?? (memberCount >= maxSeats);
+
   const copyShare = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      const shareText = `Join table "${preview?.name}" on SuperCash!\nInvite Code: ${inviteCode}\nSeats Left: ${availableSlots}\nLink: ${shareUrl}`;
+      await navigator.clipboard.writeText(shareText);
       setCopied(true);
-      toast.success("Invite link copied");
+      toast.success("Invite code & link copied");
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
       toast.error("Could not copy link");
@@ -86,6 +92,10 @@ function RoomLobbyPage() {
   const onJoinClick = () => {
     if (isHost) {
       toast.error("Host accounts run tables and cannot join as a player.");
+      return;
+    }
+    if (isFull) {
+      toast.error("This table has reached its maximum participant limit.");
       return;
     }
     if (!isLoggedIn) {
@@ -138,10 +148,10 @@ function RoomLobbyPage() {
             <span className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-semibold text-primary">
               <Users className="h-3.5 w-3.5" />
               <span>
-                {preview.member_count ?? members.length} / {preview.max_participants || 50} Players
+                {memberCount} / {maxSeats} Players ({availableSlots} seats left)
               </span>
             </span>
-            {(preview.member_count ?? members.length) >= (preview.max_participants || 50) && !isMember ? (
+            {isFull && !isMember ? (
               <Badge variant="secondary" className="border-red-500/30 bg-red-500/15 text-red-400">
                 Table Full
               </Badge>

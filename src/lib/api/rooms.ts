@@ -17,6 +17,8 @@ export type RoomPreview = {
   join_fee: number;
   max_participants?: number;
   member_count?: number;
+  available_slots?: number;
+  is_full?: boolean;
   status: RoomStatus;
   host_payment_qr_url?: string;
   host_payment_type?: string;
@@ -30,6 +32,8 @@ export type Room = RoomPreview & {
   is_member: boolean;
   member_count: number;
   max_participants: number;
+  available_slots: number;
+  is_full: boolean;
   created_at: string;
 };
 
