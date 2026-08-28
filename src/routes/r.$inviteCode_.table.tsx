@@ -148,10 +148,10 @@ function RoomTablePage() {
 
         {/* Host Control Panel */}
         {room.is_admin ? (
-          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-            <CreateRoundForm roomId={room.id} />
+          <div className={groups.length === 0 ? "grid gap-4 lg:grid-cols-[1fr_1fr]" : "grid gap-4"}>
+            {groups.length === 0 ? <CreateRoundForm roomId={room.id} /> : null}
 
-            <div className="flex flex-col gap-4">
+            <div className={groups.length === 0 ? "flex flex-col gap-4" : "grid gap-4 sm:grid-cols-2"}>
               {/* Host Settings & Tabs Card */}
               <section className="hud-panel rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-2">
@@ -282,14 +282,14 @@ function RoomTablePage() {
           </div>
         ) : null}
 
-        {/* Rounds */}
+        {/* Table Question */}
         <section className="space-y-4 pb-20">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Rounds
+              Table Question
             </h2>
             <span className="text-xs text-muted-foreground">
-              {groups.length} {groups.length === 1 ? "round" : "rounds"}
+              {groups.length === 1 ? "1 Question" : `${groups.length} Questions`}
             </span>
           </div>
 
@@ -299,8 +299,8 @@ function RoomTablePage() {
             </div>
           ) : groups.length === 0 ? (
             <p className="hud-panel rounded-2xl border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
-              No rounds yet.
-              {room.is_admin ? " Deal one from the host panel." : " Wait for the host."}
+              No question dealt yet.
+              {room.is_admin ? " Deal one from the host panel above." : " Wait for the host to deal a question."}
             </p>
           ) : (
             <div className="grid gap-4">

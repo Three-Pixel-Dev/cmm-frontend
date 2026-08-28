@@ -71,6 +71,13 @@ export type CreateRoomPayload = {
   host_payment_type?: string;
   host_payment_account_name?: string;
   host_payment_account_number?: string;
+  question_title?: string;
+  question_description?: string;
+  options?: string[];
+  one_share_price?: number;
+  close_hours?: number;
+  stake_mode?: StakeMode;
+  platform_fee_percentage?: number;
 };
 
 export type JoinRoomPayload = {
