@@ -14,6 +14,7 @@ export function CreateRoomForm() {
   const [name, setName] = useState("");
   const [mode, setMode] = useState<JoinPaymentMode>("after");
   const [fee, setFee] = useState("1000");
+  const [maxPlayers, setMaxPlayers] = useState("50");
 
   // Single Question configuration
   const [questionTitle, setQuestionTitle] = useState("");
@@ -26,6 +27,7 @@ export function CreateRoomForm() {
     const joinFee = mode === "free" ? 0 : Number.parseInt(fee, 10);
     const oneSharePrice = Number.parseInt(price, 10);
     const closeHours = Number.parseInt(hours, 10);
+    const maxParticipants = Number.parseInt(maxPlayers, 10);
 
     if (!name.trim()) {
       toast.error("Name the table first.");
@@ -33,6 +35,10 @@ export function CreateRoomForm() {
     }
     if (mode !== "free" && (!Number.isFinite(joinFee) || joinFee <= 0)) {
       toast.error("Enter a join fee.");
+      return;
+    }
+    if (!Number.isFinite(maxParticipants) || maxParticipants < 2) {
+      toast.error("Max players must be at least 2.");
       return;
     }
     if (!questionTitle.trim()) {
@@ -49,6 +55,7 @@ export function CreateRoomForm() {
         name: name.trim(),
         join_payment_mode: mode,
         join_fee: joinFee,
+        max_participants: maxParticipants,
         question_title: questionTitle.trim(),
         one_share_price: oneSharePrice,
         close_hours: Number.isFinite(closeHours) && closeHours > 0 ? closeHours : 24,
@@ -122,6 +129,40 @@ export function CreateRoomForm() {
             </p>
           </div>
         ) : null}
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="max-players">Max Players (Limit)</Label>
+            <span className="text-xs font-semibold text-primary">{maxPlayers || 0} players</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {["5", "10", "20", "50", "100"].map((count) => (
+              <button
+                key={count}
+                type="button"
+                onClick={() => setMaxPlayers(count)}
+                className={
+                  maxPlayers === count
+                    ? "hud-choice hud-choice-active rounded-lg px-2.5 py-1 text-xs font-bold"
+                    : "hud-choice rounded-lg px-2.5 py-1 text-xs text-muted-foreground"
+                }
+              >
+                {count}
+              </button>
+            ))}
+            <Input
+              id="max-players"
+              inputMode="numeric"
+              value={maxPlayers}
+              onChange={(e) => setMaxPlayers(e.target.value.replace(/[^\d]/g, ""))}
+              className="h-8 w-20 text-xs font-mono"
+              placeholder="Custom"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Once {maxPlayers || 50} players join, new players will be blocked from entering.
+          </p>
+        </div>
       </div>
 
       {/* Question Section */}

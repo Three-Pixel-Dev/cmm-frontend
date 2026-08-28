@@ -140,6 +140,13 @@ function RoomTablePage() {
               </Button>
             ) : null}
 
+            <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs font-semibold text-muted-foreground">
+              <Users className="h-3.5 w-3.5 text-primary" />
+              <span>
+                {members.length}/{room.max_participants || 50} Seats
+              </span>
+            </div>
+
             <div className="rounded-full border border-primary/35 bg-primary/10 px-4 py-1.5 font-display text-sm font-bold tabular-nums text-primary">
               {fmtKyat(chips)} table chips
             </div>
@@ -210,7 +217,7 @@ function RoomTablePage() {
                 <div className="flex items-center justify-between gap-2">
                   <h2 className="flex items-center gap-1.5 text-sm font-semibold">
                     <Users className="h-4 w-4 text-primary" />
-                    Seated Players & Payout QRs ({members.length})
+                    Seated Players & Payout QRs ({members.length}/{room.max_participants || 50})
                   </h2>
                 </div>
 

@@ -130,10 +130,23 @@ function RoomLobbyPage() {
           <p className="invite-code-display mt-6 font-mono text-4xl tracking-[0.35em] text-primary sm:text-5xl">
             {preview.invite_code}
           </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            {joinModeLabel(preview.join_payment_mode)} ·{" "}
-            {joinFeeCopy(preview.join_payment_mode, preview.join_fee)}
-          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="rounded-full border border-white/10 bg-elevated/80 px-3 py-1 text-muted-foreground">
+              {joinModeLabel(preview.join_payment_mode)} ·{" "}
+              {joinFeeCopy(preview.join_payment_mode, preview.join_fee)}
+            </span>
+            <span className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-semibold text-primary">
+              <Users className="h-3.5 w-3.5" />
+              <span>
+                {preview.member_count ?? members.length} / {preview.max_participants || 50} Players
+              </span>
+            </span>
+            {(preview.member_count ?? members.length) >= (preview.max_participants || 50) && !isMember ? (
+              <Badge variant="secondary" className="border-red-500/30 bg-red-500/15 text-red-400">
+                Table Full
+              </Badge>
+            ) : null}
+          </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             <Button type="button" variant="outline" onClick={() => void copyShare()}>
@@ -168,7 +181,11 @@ function RoomLobbyPage() {
                   Sit at the table
                 </Link>
               </Button>
-            ) : isHost ? null : (
+            ) : isHost ? null : (preview.member_count ?? members.length) >= (preview.max_participants || 50) ? (
+              <Button disabled className="opacity-50">
+                Table Full ({preview.member_count ?? members.length}/{preview.max_participants || 50})
+              </Button>
+            ) : (
               <Button onClick={onJoinClick}>
                 {isPaidJoin(preview.join_payment_mode) ? "Join on tab" : "Join table"}
               </Button>

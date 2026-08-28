@@ -15,6 +15,8 @@ export type RoomPreview = {
   invite_code: string;
   join_payment_mode: JoinPaymentMode;
   join_fee: number;
+  max_participants?: number;
+  member_count?: number;
   status: RoomStatus;
   host_payment_qr_url?: string;
   host_payment_type?: string;
@@ -27,6 +29,7 @@ export type Room = RoomPreview & {
   is_admin: boolean;
   is_member: boolean;
   member_count: number;
+  max_participants: number;
   created_at: string;
 };
 
@@ -67,6 +70,7 @@ export type CreateRoomPayload = {
   name: string;
   join_payment_mode: JoinPaymentMode;
   join_fee?: number;
+  max_participants?: number;
   host_payment_qr_url?: string;
   host_payment_type?: string;
   host_payment_account_name?: string;
