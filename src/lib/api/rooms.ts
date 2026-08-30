@@ -86,6 +86,7 @@ export type CreateRoomPayload = {
   close_hours?: number;
   stake_mode?: StakeMode;
   platform_fee_percentage?: number;
+  is_fair_mode?: boolean;
 };
 
 export type JoinRoomPayload = {
@@ -120,6 +121,7 @@ export type CreateRoomMarketPayload = {
   platform_fee_percentage?: number;
   stake_mode: StakeMode;
   options?: string[];
+  is_fair_mode?: boolean;
 };
 
 export type RoomMessage = {
@@ -140,6 +142,9 @@ export const roomsApi = {
       .then((r) => unwrap(r.data)),
 
   listMine: () => http.get<ApiEnvelope<Room[]>>("/rooms/mine").then((r) => unwrap(r.data)),
+
+  getMyLimit: () =>
+    http.get<ApiEnvelope<{ max_participants: number }>>("/rooms/my-limit").then((r) => unwrap(r.data)),
 
   get: (id: string) => http.get<ApiEnvelope<Room>>(`/rooms/${id}`).then((r) => unwrap(r.data)),
 

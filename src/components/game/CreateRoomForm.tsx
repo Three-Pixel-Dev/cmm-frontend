@@ -1,20 +1,32 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateRoom } from "@/hooks/useRooms";
-import type { JoinPaymentMode } from "@/lib/api/rooms";
+import { roomsApi, type JoinPaymentMode } from "@/lib/api/rooms";
 
 export function CreateRoomForm() {
   const navigate = useNavigate();
   const create = useCreateRoom();
+  const mineQ = useQuery({
+    queryKey: ["rooms", "mine"],
+    queryFn: () => roomsApi.listMine(),
+  });
+  const existingRoom = mineQ.data && mineQ.data.length > 0 ? mineQ.data[0] : null;
+
+  const limitQ = useQuery({
+    queryKey: ["rooms", "my-limit"],
+    queryFn: () => roomsApi.getMyLimit(),
+  });
+  const maxPlayersLimit = limitQ.data?.max_participants ?? 50;
+
   const [name, setName] = useState("");
   const [mode, setMode] = useState<JoinPaymentMode>("after");
   const [fee, setFee] = useState("1000");
-  const [maxPlayers, setMaxPlayers] = useState("50");
 
   // Single Question configuration
   const [questionTitle, setQuestionTitle] = useState("");
@@ -23,6 +35,7 @@ export function CreateRoomForm() {
   const [stakeMode, setStakeMode] = useState<"prepaid" | "pay_after">("prepaid");
   const [optionType, setOptionType] = useState<"yes_no" | "three_way" | "custom">("yes_no");
   const [customOptions, setCustomOptions] = useState<string[]>(["Option 1", "Option 2"]);
+  const [isFairMode, setIsFairMode] = useState(true);
 
   const handleAddOption = () => {
     if (customOptions.length >= 10) {
@@ -48,12 +61,37 @@ export function CreateRoomForm() {
     });
   };
 
+  if (existingRoom) {
+    return (
+      <div className="hud-panel space-y-4 rounded-2xl p-5 text-center sm:p-6">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <ShieldAlert className="h-6 w-6" />
+        </div>
+        <div>
+          <h3 className="font-display text-lg font-bold text-foreground">Table Already Open</h3>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Each host access code allows creating <strong>1 table</strong>. You already have an active table:
+          </p>
+          <div className="mt-3 rounded-xl border border-primary/30 bg-primary/10 p-3">
+            <span className="block font-bold text-sm text-foreground">{existingRoom.name}</span>
+            <span className="block font-mono text-xs text-primary font-semibold mt-0.5">Code: {existingRoom.invite_code}</span>
+          </div>
+        </div>
+        <Button
+          onClick={() => void navigate({ to: "/r/$inviteCode/table", params: { inviteCode: existingRoom.invite_code } })}
+          className="w-full font-semibold"
+        >
+          Go to My Table →
+        </Button>
+      </div>
+    );
+  }
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const joinFee = mode === "free" ? 0 : Number.parseInt(fee, 10);
     const oneSharePrice = Number.parseInt(price, 10);
     const closeHours = Number.parseInt(hours, 10);
-    const maxParticipants = Number.parseInt(maxPlayers, 10);
 
     if (!name.trim()) {
       toast.error("Name the table first.");
@@ -61,10 +99,6 @@ export function CreateRoomForm() {
     }
     if (mode !== "free" && (!Number.isFinite(joinFee) || joinFee <= 0)) {
       toast.error("Enter a join fee.");
-      return;
-    }
-    if (!Number.isFinite(maxParticipants) || maxParticipants < 2) {
-      toast.error("Max players must be at least 2.");
       return;
     }
     if (!questionTitle.trim()) {
@@ -94,17 +128,18 @@ export function CreateRoomForm() {
         name: name.trim(),
         join_payment_mode: mode,
         join_fee: joinFee,
-        max_participants: maxParticipants,
+        max_participants: maxPlayersLimit,
         question_title: questionTitle.trim(),
         one_share_price: oneSharePrice,
         close_hours: Number.isFinite(closeHours) && closeHours > 0 ? closeHours : 24,
         stake_mode: stakeMode,
         options: finalOptions,
+        is_fair_mode: isFairMode,
       },
       {
         onSuccess: (room) => {
           toast.success("Table & Question are open!");
-          void navigate({ to: "/r/$inviteCode_/table", params: { inviteCode: room.invite_code } });
+          void navigate({ to: "/r/$inviteCode/table", params: { inviteCode: room.invite_code } });
         },
         onError: (err: Error) => toast.error(err.message),
       },
@@ -169,37 +204,27 @@ export function CreateRoomForm() {
           </div>
         ) : null}
 
-        <div className="space-y-1.5">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="max-players">Max Players (Limit)</Label>
-            <span className="text-xs font-semibold text-primary">{maxPlayers || 0} players</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {["5", "10", "20", "50", "100"].map((count) => (
-              <button
-                key={count}
-                type="button"
-                onClick={() => setMaxPlayers(count)}
-                className={
-                  maxPlayers === count
-                    ? "hud-choice hud-choice-active rounded-lg px-2.5 py-1 text-xs font-bold"
-                    : "hud-choice rounded-lg px-2.5 py-1 text-xs text-muted-foreground"
-                }
-              >
-                {count}
-              </button>
-            ))}
-            <Input
-              id="max-players"
-              inputMode="numeric"
-              value={maxPlayers}
-              onChange={(e) => setMaxPlayers(e.target.value.replace(/[^\d]/g, ""))}
-              className="h-8 w-20 text-xs font-mono"
-              placeholder="Custom"
-            />
+            <Label className="text-xs font-semibold text-primary">Max Players (Table Capacity)</Label>
+            <span className="text-xs font-bold text-primary">
+              {limitQ.isLoading ? (
+                <span className="inline-flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Loading limit…
+                </span>
+              ) : (
+                `${maxPlayersLimit} Players Limit`
+              )}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Once {maxPlayers || 50} players join, new players will be blocked from entering.
+            {limitQ.isLoading ? (
+              "Fetching your table player limit set by Super Admin..."
+            ) : (
+              <>
+                Your table player limit is set to <strong className="text-foreground">{maxPlayersLimit} players</strong> by Super Admin via your host access code.
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -263,6 +288,46 @@ export function CreateRoomForm() {
                 {label}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Betting Rules Mode */}
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold">Betting Rules Mode</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setIsFairMode(true)}
+              className={`rounded-xl border p-3 text-left transition-all ${
+                isFairMode
+                  ? "border-primary bg-primary/10 text-foreground shadow-sm"
+                  : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 font-bold text-xs">
+                <span>🛡️</span> Fair Play Mode
+              </div>
+              <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                Overcrowded protection <strong>ON</strong> • <strong>1 bet</strong> per player limit
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsFairMode(false)}
+              className={`rounded-xl border p-3 text-left transition-all ${
+                !isFairMode
+                  ? "border-primary bg-primary/10 text-foreground shadow-sm"
+                  : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 font-bold text-xs">
+                <span>⚡</span> Open Trading Mode
+              </div>
+              <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                Overcrowded protection <strong>OFF</strong> • <strong>Multiple bets</strong> allowed
+              </p>
+            </button>
           </div>
         </div>
 

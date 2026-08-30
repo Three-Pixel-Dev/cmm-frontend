@@ -72,7 +72,7 @@ function RoomLobbyPage() {
   const isMember = !!room?.is_member;
   const shareUrl = `${getShareOrigin()}/r/${inviteCode}`;
 
-  const memberCount = preview?.member_count ?? members.length;
+  const memberCount = preview?.member_count ?? membersQ.data?.length ?? 0;
   const maxSeats = preview?.max_participants || 50;
   const availableSlots = preview?.available_slots ?? Math.max(0, maxSeats - memberCount);
   const isFull = preview?.is_full ?? (memberCount >= maxSeats);
@@ -191,9 +191,9 @@ function RoomLobbyPage() {
                   Sit at the table
                 </Link>
               </Button>
-            ) : isHost ? null : (preview.member_count ?? members.length) >= (preview.max_participants || 50) ? (
+            ) : isHost ? null : (preview.member_count ?? membersQ.data?.length ?? 0) >= (preview.max_participants || 50) ? (
               <Button disabled className="opacity-50">
-                Table Full ({preview.member_count ?? members.length}/{preview.max_participants || 50})
+                Table Full ({preview.member_count ?? membersQ.data?.length ?? 0}/{preview.max_participants || 50})
               </Button>
             ) : (
               <Button onClick={onJoinClick}>

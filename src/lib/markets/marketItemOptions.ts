@@ -1,5 +1,5 @@
 import type { Bilingual } from "@/data/markets";
-import type { ApiMarketItemOption, ApiMarketPool } from "@/types/market-api";
+import type { ApiMarketItem, ApiMarketItemOption, ApiMarketPool } from "@/types/market-api";
 import type { MarketItem } from "@/hooks/useMarketGroupDetail";
 import type { LedgerKind } from "@/lib/format";
 
@@ -46,7 +46,11 @@ function applyLegacyPoolFallbackToOptions(
 
 /** Normalized answer choices for one market item (API options or legacy yes/no fallback). */
 export function getItemAnswerOptions(
-  item: Pick<MarketItem, "id" | "options" | "real_pool" | "virtual_pool">,
+  item: Pick<ApiMarketItem, "id"> & {
+    options?: ApiMarketItemOption[] | null;
+    real_pool?: ApiMarketPool | null;
+    virtual_pool?: ApiMarketPool | null;
+  },
   ledger: LedgerKind,
   lang: "en" | "my",
 ): ItemAnswerOption[] {

@@ -49,7 +49,7 @@ export function MarketRealtimeProvider({ children }: { children: React.ReactNode
       const msg = parseWsMessage(String(ev.data));
       if (!msg || msg.type !== "event" || msg.channel !== CHANNEL_MARKET_CREATED) return;
 
-      const group = parseMarketCreatedPayload(msg.payload);
+      const group = parseMarketCreatedPayload(String(msg.payload ?? ""));
       if (group) applyMarketCreated(group);
     };
 

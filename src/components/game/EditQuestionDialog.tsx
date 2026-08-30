@@ -77,7 +77,7 @@ export function EditQuestionDialog({
     updateM.mutate();
   };
 
-  const isResolved = item.status === "resolved" || item.status === "cancelled";
+  const isResolved = item.status === "settled" || item.status === "cancelled";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

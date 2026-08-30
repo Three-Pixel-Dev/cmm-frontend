@@ -2,6 +2,9 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuth } from "@/store/useAuth";
 
 declare module "axios" {
+  interface AxiosRequestConfig {
+    _skipAuthRefresh?: boolean;
+  }
   interface InternalAxiosRequestConfig {
     _skipAuthRefresh?: boolean;
   }
@@ -73,6 +76,6 @@ http.interceptors.response.use(
   },
 );
 
-export function unwrap<T>(envelope: ApiEnvelope<T>): T {
-  return envelope.data as T;
+export function unwrap<T>(envelope?: ApiEnvelope<T> | null): T {
+  return (envelope?.data ?? envelope) as T;
 }
